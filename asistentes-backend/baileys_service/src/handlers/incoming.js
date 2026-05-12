@@ -2,7 +2,7 @@
 
 import { downloadMediaMessage } from '@whiskeysockets/baileys'
 
-const FLASK_API_URL = process.env.FLASK_API_URL || 'http://localhost:5001'
+const FLASK_API_URL = process.env.FLASK_INTERNAL_URL || process.env.FLASK_API_URL || 'http://localhost:5001'
 const SHARED_SECRET = process.env.BAILEYS_SHARED_SECRET || ''
 
 const TIPO_KEYWORDS = {
