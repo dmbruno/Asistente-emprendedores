@@ -2,53 +2,51 @@
 
 from __future__ import annotations
 
-import base64
 import logging
 from functools import wraps
 from typing import Any
 
 import jwt
+from jwt import PyJWKClient
 from flask import abort, current_app, request
 
 logger = logging.getLogger(__name__)
 
+# Cache de clientes JWKS por URL de Supabase
+_jwks_clients: dict[str, PyJWKClient] = {}
+
+
+def _get_jwks_client(supabase_url: str) -> PyJWKClient:
+    if supabase_url not in _jwks_clients:
+        _jwks_clients[supabase_url] = PyJWKClient(
+            f"{supabase_url}/auth/v1/.well-known/jwks.json",
+            cache_keys=True,
+        )
+    return _jwks_clients[supabase_url]
+
 
 def _verify_jwt(token: str) -> dict[str, Any]:
     settings = current_app.config["SETTINGS"]
-    if not settings.supabase_jwt_secret:
-        abort(503, description="SUPABASE_JWT_SECRET no configurado")
+    if not settings.supabase_url:
+        abort(503, description="SUPABASE_URL no configurado")
 
-    # Diagnóstico: decodificar sin verificar para ver header/aud
     try:
-        header = jwt.get_unverified_header(token)
-        unverified = jwt.decode(token, options={"verify_signature": False})
-        logger.info("JWT header: %s | aud=%s | iss=%s", header, unverified.get("aud"), unverified.get("iss"))
-    except Exception as e:
-        logger.error("JWT decode (sin verificar) falló: %s", e)
-
-    secret_raw = settings.supabase_jwt_secret
-    logger.info("JWT secret len=%d, starts=%s", len(secret_raw), secret_raw[:8])
-
-    secrets_to_try: list[tuple[str, str | bytes]] = [("raw", secret_raw)]
-    try:
-        secrets_to_try.append(("b64decoded", base64.b64decode(secret_raw)))
-    except Exception:
-        pass
-
-    for label, secret in secrets_to_try:
-        try:
-            return jwt.decode(
-                token,
-                secret,
-                algorithms=["HS256"],
-                audience="authenticated",
-            )
-        except jwt.ExpiredSignatureError:
-            abort(401, description="token expirado")
-        except jwt.InvalidTokenError as exc:
-            logger.warning("JWT falló [%s]: %s: %s", label, type(exc).__name__, exc)
-
-    abort(401, description="token inválido")
+        client = _get_jwks_client(settings.supabase_url)
+        signing_key = client.get_signing_key_from_jwt(token)
+        return jwt.decode(
+            token,
+            signing_key,
+            algorithms=["ES256", "HS256"],
+            audience="authenticated",
+        )
+    except jwt.ExpiredSignatureError:
+        abort(401, description="token expirado")
+    except jwt.InvalidTokenError as exc:
+        logger.warning("JWT inválido: %s: %s", type(exc).__name__, exc)
+        abort(401, description="token inválido")
+    except Exception as exc:
+        logger.error("JWT error inesperado: %s: %s", type(exc).__name__, exc)
+        abort(401, description="token inválido")
 
 
 _DEV_USER: dict[str, Any] = {
