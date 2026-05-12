@@ -17,6 +17,10 @@ log = logging.getLogger(__name__)
 
 COMANDOS_CONFIRMACION = {"si", "sí", "confirmar", "ok", "confirmado", "dale"}
 COMANDOS_RECHAZO = {"no", "rechazar", "cancelar", "borrar", "eliminar"}
+COMANDOS_SALUDO = {
+    "hola", "hola!", "hi", "hello", "buenas", "buenas!", "buenos dias",
+    "buenas tardes", "buenas noches", "inicio", "start", "comenzar", "empezar",
+}
 
 # "factura a María López $12000 consultoría web"
 # "emitir factura a Juan $5.500"
@@ -27,24 +31,46 @@ _RE_EMISION = re.compile(
     re.IGNORECASE,
 )
 
+def _bienvenida() -> str:
+    return (
+        "👋 ¡Bienvenido/a a *PropioIA*!\n"
+        "Tu asistente contable inteligente 🤖\n\n"
+        "Registrá compras y ventas, emitís facturas y seguís tu situación fiscal — "
+        "todo desde WhatsApp, sin complicaciones.\n\n"
+        "Escribí *ayuda* para ver qué puedo hacer por vos 👇"
+    )
+
+
 def _menu_ayuda(condicion_fiscal: str = "monotributo") -> str:
     if condicion_fiscal == "responsable_inscripto":
         return (
-            "Comandos disponibles:\n"
-            "• Enviame una *foto de una factura* y la registro automáticamente.\n"
-            "• *si* / *no* → confirmar o rechazar la última factura o emisión pendiente.\n"
-            "• *emitir factura* → iniciá el proceso para emitir una Factura A o B "
-            "(el asistente te va a pedir CUIT del receptor, tipo, descripción, neto e IVA).\n"
-            "• *resumen* → totales del mes y posición de IVA.\n"
-            "• *ayuda* → este menú."
+            "🧾 *PropioIA — Menú principal*\n\n"
+            "📸 *Foto de factura*\n"
+            "   → La proceso y registro automáticamente\n\n"
+            "✅ *si* · ❌ *no*\n"
+            "   → Confirmar o descartar una factura pendiente\n\n"
+            "📄 *emitir factura*\n"
+            "   → Emitir Factura A o B con IVA discriminado\n\n"
+            "📊 *resumen*\n"
+            "   → Totales del mes y posición de IVA\n\n"
+            "❓ *ayuda*\n"
+            "   → Ver este menú\n\n"
+            "_PropioIA — tu contabilidad en WhatsApp_ ✨"
         )
     return (
-        "Comandos disponibles:\n"
-        "• Enviame una *foto de una factura* y la registro automáticamente.\n"
-        "• *si* / *no* → confirmar o rechazar la última factura o emisión pendiente.\n"
-        "• *factura a [nombre] $[monto] [concepto]* → emitir una Factura C.\n"
-        "• *resumen* → totales del mes actual.\n"
-        "• *ayuda* → este menú."
+        "🧾 *PropioIA — Menú principal*\n\n"
+        "📸 *Foto de factura*\n"
+        "   → La proceso y registro automáticamente\n\n"
+        "✅ *si* · ❌ *no*\n"
+        "   → Confirmar o descartar una factura pendiente\n\n"
+        "📄 *factura a [nombre] $[monto] [concepto]*\n"
+        "   → Emitir una Factura C\n"
+        "   _Ej: factura a María López $15000 diseño web_\n\n"
+        "📊 *resumen*\n"
+        "   → Totales del mes y tope de categoría\n\n"
+        "❓ *ayuda*\n"
+        "   → Ver este menú\n\n"
+        "_PropioIA — tu contabilidad en WhatsApp_ ✨"
     )
 
 
@@ -116,9 +142,12 @@ def factura():
             .execute()
         ).count or 0
         if count >= limite:
-            _enviar_mensaje(cliente_id, remitente,
-                f"Alcanzaste el límite de {limite} facturas del mes en tu plan {plan.capitalize()}. "
-                "Ingresá al dashboard para actualizar tu plan.")
+            _enviar_mensaje(cliente_id, remitente, (
+                f"⚠️ *Límite del mes alcanzado*\n\n"
+                f"Ya registraste {limite} facturas este mes en tu plan *{plan.capitalize()}*.\n\n"
+                f"Para seguir sin límites, actualizá tu plan desde el dashboard 👉 propoia.com.ar/dashboard\n\n"
+                f"Escribí *ayuda* si necesitás orientación."
+            ))
             return jsonify({"factura_id": None, "resumen_texto": None}), 402
 
     # Obtener API key del cliente: buscar cualquier provider de IA configurado
@@ -270,6 +299,10 @@ def comando():
         abort(400, description="cliente_id requerido")
 
     admin = _admin()
+
+    # ── Saludos → bienvenida (antes del wizard para no bloquearlo) ───────────
+    if texto.strip().rstrip("!?.") in COMANDOS_SALUDO:
+        return jsonify({"respuesta": _bienvenida()})
 
     # ── Verificar si hay un wizard RI activo (tiene prioridad sobre todo) ────
     ri_ctx = _pendiente_ri(admin, cliente_id)
