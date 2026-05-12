@@ -23,8 +23,26 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-HOMO = os.getenv("AFIP_HOMO", "true").lower() in ("1", "true", "yes")
-MOCK = os.getenv("AFIP_MOCK", "true").lower() in ("1", "true", "yes")
+HOMO = os.getenv("AFIP_HOMO", "false").lower() in ("1", "true", "yes")
+MOCK = os.getenv("AFIP_MOCK", "false").lower() in ("1", "true", "yes")
+
+
+def _es_mock(cliente_id: str) -> bool:
+    """Mock global O flag por-cliente en la tabla clientes."""
+    if MOCK:
+        return True
+    try:
+        from app.extensions import get_supabase_admin
+        row = (
+            get_supabase_admin()
+            .table("clientes")
+            .select("afip_mock")
+            .eq("id", cliente_id)
+            .execute()
+        ).data
+        return bool(row and row[0].get("afip_mock"))
+    except Exception:
+        return False
 
 
 @dataclass
@@ -179,7 +197,7 @@ def emitir_factura_c(
 
     pv = _punto_venta(cliente_id)
 
-    if MOCK:
+    if _es_mock(cliente_id):
         return _mock_factura(cuit_emisor, pv, total, fecha)
 
     cert_pem, key_pem = _cargar_cert_key(cliente_id)
@@ -252,7 +270,7 @@ def emitir_factura_ab(
     tipo_int = TIPO_FACTURA_A if tipo_cbte.upper() == "A" else TIPO_FACTURA_B
     pv = _punto_venta(cliente_id)
 
-    if MOCK:
+    if _es_mock(cliente_id):
         return _mock_factura_ab(cuit_emisor, pv, total, fecha, tipo_cbte.upper())
 
     cert_pem, key_pem = _cargar_cert_key(cliente_id)
