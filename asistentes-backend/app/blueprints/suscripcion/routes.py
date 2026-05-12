@@ -240,6 +240,6 @@ def estado():
         .execute()
     ).data
     if not row:
-        abort(404)
+        return jsonify({"plan": "trial", "mp_preapproval_id": None, "mp_plan_solicitado": None})
 
     return jsonify(row[0])
