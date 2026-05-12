@@ -1,0 +1,41 @@
+# Entornos Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+.next/
+
+# Variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
+
+# Claves y certificados — NUNCA subir
+*.key
+*.crt
+*.pem
+*.csr
+cargar_afip_cert.py
+
+# Sesiones Baileys
+baileys_service/auth_info_baileys/
+baileys_service/sessions/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/

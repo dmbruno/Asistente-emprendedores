@@ -1,0 +1,52 @@
+# Web framework
+Flask==3.1.0
+gunicorn==23.0.0
+flask-cors==5.0.0
+
+# Configuración y schemas
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+
+# IA
+anthropic==0.42.0
+
+# Pagos
+mercadopago==2.2.2
+google-generativeai==0.8.3
+eval_type_backport==0.2.2  # Python 3.9 compat con Pydantic v2 + union syntax
+
+# AFIP Web Services
+lxml==6.1.0
+zeep==4.3.2
+
+# Supabase
+supabase==2.10.0
+
+# Crypto
+cryptography==44.0.0
+
+# AFIP (se instala pero no se usa hasta que haya certificado)
+# pyafipws==2.16  # opcional, pesa varios MB; descomentar cuando se vaya a usar
+
+# Excel
+openpyxl==3.1.5
+
+# JWT
+PyJWT==2.10.1
+
+# HTTP
+httpx==0.27.0
+requests==2.32.3
+
+# Tests
+pytest==8.3.4
+pytest-mock==3.14.0
+pytest-cov==6.0.0
+freezegun==1.5.1
+
+# Lint / format
+ruff==0.8.4
+
+# Observabilidad opcional
+sentry-sdk[flask]==2.19.2
