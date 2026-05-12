@@ -230,7 +230,7 @@ export default function SuscripcionPage() {
             "El cobro es mensual y automático desde Mercado Pago.",
             "Podés cancelar en cualquier momento desde esta pantalla.",
             "Al cancelar, tu plan sigue activo hasta el fin del período pagado.",
-            "Diseñado para monotributistas. No soportamos Responsables Inscriptos.",
+            "Compatible con monotributistas y Responsables Inscriptos.",
           ].map((t) => (
             <li key={t} className="flex gap-2">
               <span className="text-verde-500 shrink-0">·</span>
