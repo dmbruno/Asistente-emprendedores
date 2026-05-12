@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import base64
+import logging
 from functools import wraps
 from typing import Any
 
 import jwt
 from flask import abort, current_app, request
+
+logger = logging.getLogger(__name__)
 
 
 def _verify_jwt(token: str) -> dict[str, Any]:
@@ -15,18 +18,24 @@ def _verify_jwt(token: str) -> dict[str, Any]:
     if not settings.supabase_jwt_secret:
         abort(503, description="SUPABASE_JWT_SECRET no configurado")
 
-    secret_raw = settings.supabase_jwt_secret
-    # El dashboard de Supabase muestra el JWT secret en base64.
-    # Probamos primero el valor tal cual (string plano) y luego decodificado,
-    # para soportar ambas formas sin depender de cómo se cargó la variable.
-    secrets_to_try: list[str | bytes] = [secret_raw]
+    # Diagnóstico: decodificar sin verificar para ver header/aud
     try:
-        secrets_to_try.append(base64.b64decode(secret_raw))
+        header = jwt.get_unverified_header(token)
+        unverified = jwt.decode(token, options={"verify_signature": False})
+        logger.info("JWT header: %s | aud=%s | iss=%s", header, unverified.get("aud"), unverified.get("iss"))
+    except Exception as e:
+        logger.error("JWT decode (sin verificar) falló: %s", e)
+
+    secret_raw = settings.supabase_jwt_secret
+    logger.info("JWT secret len=%d, starts=%s", len(secret_raw), secret_raw[:8])
+
+    secrets_to_try: list[tuple[str, str | bytes]] = [("raw", secret_raw)]
+    try:
+        secrets_to_try.append(("b64decoded", base64.b64decode(secret_raw)))
     except Exception:
         pass
 
-    last_exc: Exception | None = None
-    for secret in secrets_to_try:
+    for label, secret in secrets_to_try:
         try:
             return jwt.decode(
                 token,
@@ -37,7 +46,7 @@ def _verify_jwt(token: str) -> dict[str, Any]:
         except jwt.ExpiredSignatureError:
             abort(401, description="token expirado")
         except jwt.InvalidTokenError as exc:
-            last_exc = exc
+            logger.warning("JWT falló [%s]: %s: %s", label, type(exc).__name__, exc)
 
     abort(401, description="token inválido")
 
