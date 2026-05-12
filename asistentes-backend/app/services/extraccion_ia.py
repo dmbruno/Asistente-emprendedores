@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field, field_validator
 logger = logging.getLogger(__name__)
 
 CLAUDE_MODEL = "claude-opus-4-7"
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "prompts"
 # Mantener el viejo path como fallback para tests que lo usen directamente
 PROMPT_PATH = _PROMPTS_DIR / "extraccion_factura.md"
