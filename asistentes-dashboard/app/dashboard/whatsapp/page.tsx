@@ -210,12 +210,12 @@ export default function WhatsappPage() {
               </div>
             )}
             {baileysOffline ? (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 space-y-2">
-                <p className="text-sm font-semibold text-slate-700">Iniciá el servicio en una terminal:</p>
-                <pre className="text-xs text-slate-600 bg-white rounded-lg border border-slate-100 p-3 overflow-x-auto">
-                  {"cd asistentes-backend/baileys_service\nnpm run dev"}
-                </pre>
-                <p className="text-xs text-slate-400">Esta pantalla se actualiza sola cuando esté corriendo.</p>
+              <div className="rounded-xl border border-dorado-200 bg-dorado-400/5 px-4 py-4 space-y-2">
+                <p className="text-sm font-semibold text-dorado-800">El servicio está iniciando…</p>
+                <p className="text-xs text-dorado-700">
+                  El servidor de WhatsApp puede tardar hasta 60 segundos en despertar.
+                  Esta pantalla se actualiza sola — esperá un momento.
+                </p>
               </div>
             ) : (
               <button

@@ -34,7 +34,7 @@ def status():
         r = http_requests.get(
             _baileys_url(f"/instances/{cliente_id}/status"),
             headers=_baileys_headers(),
-            timeout=5,
+            timeout=15,
         )
         return jsonify(r.json())
     except Exception as exc:
