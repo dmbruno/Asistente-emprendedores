@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 from functools import wraps
 from typing import Any
 
@@ -13,18 +14,32 @@ def _verify_jwt(token: str) -> dict[str, Any]:
     settings = current_app.config["SETTINGS"]
     if not settings.supabase_jwt_secret:
         abort(503, description="SUPABASE_JWT_SECRET no configurado")
+
+    secret_raw = settings.supabase_jwt_secret
+    # El dashboard de Supabase muestra el JWT secret en base64.
+    # Probamos primero el valor tal cual (string plano) y luego decodificado,
+    # para soportar ambas formas sin depender de cómo se cargó la variable.
+    secrets_to_try: list[str | bytes] = [secret_raw]
     try:
-        payload = jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-        )
-    except jwt.ExpiredSignatureError:
-        abort(401, description="token expirado")
-    except jwt.InvalidTokenError:
-        abort(401, description="token inválido")
-    return payload
+        secrets_to_try.append(base64.b64decode(secret_raw))
+    except Exception:
+        pass
+
+    last_exc: Exception | None = None
+    for secret in secrets_to_try:
+        try:
+            return jwt.decode(
+                token,
+                secret,
+                algorithms=["HS256"],
+                audience="authenticated",
+            )
+        except jwt.ExpiredSignatureError:
+            abort(401, description="token expirado")
+        except jwt.InvalidTokenError as exc:
+            last_exc = exc
+
+    abort(401, description="token inválido")
 
 
 _DEV_USER: dict[str, Any] = {
