@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { apiFetch } from "@/lib/api";
 
 type Estado = "idle" | "subiendo" | "ok" | "error" | "confirmando" | "confirmada";
 
@@ -23,8 +24,6 @@ interface Respuesta {
   estado: string;
   datos_extraidos: DatosExtraidos;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export default function UploadFacturaPage() {
   const [estado, setEstado] = useState<Estado>("idle");
@@ -51,9 +50,8 @@ export default function UploadFacturaPage() {
   async function onConfirmar() {
     if (!resultado) return;
     setEstado("confirmando");
-    await fetch(`${API_URL}/api/v1/facturas/${resultado.factura_id}`, {
+    await apiFetch(`/api/v1/facturas/${resultado.factura_id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado: "confirmada" }),
     });
     setEstado("confirmada");
@@ -64,21 +62,14 @@ export default function UploadFacturaPage() {
     setEstado("subiendo");
     setError(null);
 
-    const form = new FormData();
-    form.append("image", archivo);
+    const formData = new FormData();
+    formData.append("image", archivo);
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/facturas/upload`, {
+      const data = await apiFetch<Respuesta>("/api/v1/facturas/upload", {
         method: "POST",
-        body: form,
+        body: formData,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || data.error || "Error al procesar");
-      }
-
       setResultado(data);
       setEstado("ok");
     } catch (err) {

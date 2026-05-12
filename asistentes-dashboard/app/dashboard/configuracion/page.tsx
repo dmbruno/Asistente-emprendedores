@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+import { apiFetch } from "@/lib/api";
 
 const CATEGORIAS_MONOTRIBUTO = [
   { cat: "A", servicios: 7_400_000,  bienes: 11_200_000 },
@@ -66,14 +65,12 @@ export default function ConfiguracionPage() {
   const [certError, setCertError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/me`)
-      .then((r) => r.json())
+    apiFetch<Cliente>("/api/v1/me")
       .then((d) => { setForm(d); setOriginal(d); })
       .finally(() => setCargando(false));
 
-    fetch(`${API_URL}/api/v1/api-keys`)
-      .then((r) => r.json())
-      .then((d: { items: { provider: string }[] }) => {
+    apiFetch<{ items: { provider: string }[] }>("/api/v1/api-keys")
+      .then((d) => {
         const providers = (d.items || []).map((k) => k.provider);
         setCertConfigurado(providers.includes("afip_cert") && providers.includes("afip_key"));
       })
@@ -108,8 +105,7 @@ export default function ConfiguracionPage() {
     setAfipResult(null);
     setAfipAutoRelleno(false);
     try {
-      const res = await fetch(`${API_URL}/api/v1/consultar-cuit?cuit=${encodeURIComponent(cuit)}`);
-      const data: AfipResult = await res.json();
+      const data = await apiFetch<AfipResult>(`/api/v1/consultar-cuit?cuit=${encodeURIComponent(cuit)}`);
       setAfipResult(data);
 
       // Solo auto-rellenar si AFIP devolvió datos reales (fuente: "afip")
@@ -152,12 +148,10 @@ export default function ConfiguracionPage() {
 
       if (Object.keys(payload).length === 0) { setGuardando("ok"); return; }
 
-      const res = await fetch(`${API_URL}/api/v1/me`, {
+      await apiFetch("/api/v1/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.detail || "Error al guardar"); }
       setOriginal(form);
       setGuardando("ok");
     } catch (err) {
@@ -172,11 +166,10 @@ export default function ConfiguracionPage() {
     setCertError(null);
     try {
       const guardaUno = async (provider: string, value: string) => {
-        const r = await fetch(`${API_URL}/api/v1/api-keys`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
+        await apiFetch("/api/v1/api-keys", {
+          method: "POST",
           body: JSON.stringify({ provider, api_key: value.trim() }),
         });
-        if (!r.ok) throw new Error(`Error guardando ${provider}`);
       };
       await guardaUno("afip_cert", certContent);
       await guardaUno("afip_key", keyContent);
@@ -186,10 +179,9 @@ export default function ConfiguracionPage() {
 
   async function eliminarCertificado() {
     try {
-      const r = await fetch(`${API_URL}/api/v1/api-keys`);
-      const d: { items: { id: string; provider: string }[] } = await r.json();
+      const d = await apiFetch<{ items: { id: string; provider: string }[] }>("/api/v1/api-keys");
       const afipKeys = (d.items || []).filter((k) => k.provider === "afip_cert" || k.provider === "afip_key");
-      await Promise.all(afipKeys.map((k) => fetch(`${API_URL}/api/v1/api-keys/${k.id}`, { method: "DELETE" })));
+      await Promise.all(afipKeys.map((k) => apiFetch(`/api/v1/api-keys/${k.id}`, { method: "DELETE" })));
       setCertConfigurado(false); setCertEstado("idle");
     } catch { setCertError("Error al eliminar el certificado."); }
   }

@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import YearPicker from "@/components/ui/YearPicker";
 import { downloadCSV } from "@/lib/csv-export";
 import { UpgradeBanner } from "@/components/ui/UpgradeBanner";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+import { apiFetch } from "@/lib/api";
 
 const LIMITES_MONOTRIBUTO: Record<string, number> = {
   A: 7_400_000,  B: 11_000_000, C: 15_400_000, D: 19_100_000,
@@ -141,15 +140,15 @@ export default function ResumenPage() {
   const [errorExport, setErrorExport] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/me`).then((r) => r.json()).then(setCliente);
+    apiFetch<Cliente>("/api/v1/me").then(setCliente).catch(() => null);
   }, []);
 
   useEffect(() => {
     setCargando(true);
     setResumen(null);
-    fetch(`${API_URL}/api/v1/facturas/resumen/anual?anio=${anio}`)
-      .then((r) => r.json())
+    apiFetch<ResumenAnual>(`/api/v1/facturas/resumen/anual?anio=${anio}`)
       .then(setResumen)
+      .catch(() => null)
       .finally(() => setCargando(false));
   }, [anio]);
 

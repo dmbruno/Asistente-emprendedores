@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+import { apiFetch } from "@/lib/api";
 
 const PROVEEDORES = [
   {
@@ -61,9 +60,9 @@ export default function ApiKeysPage() {
 
   function cargarKeys() {
     setCargando(true);
-    fetch(`${API_URL}/api/v1/api-keys`)
-      .then((r) => r.json())
+    apiFetch<{ items: ApiKey[] }>("/api/v1/api-keys")
       .then((d) => setKeys(d.items || []))
+      .catch(() => null)
       .finally(() => setCargando(false));
   }
 
@@ -88,14 +87,10 @@ export default function ApiKeysPage() {
     setErrorMsg(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/api-keys`, {
+      await apiFetch("/api/v1/api-keys", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: providerActivo, api_key: inputKey.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Error al guardar");
-
       setEstado("ok");
       setTimeout(() => {
         cerrarForm();
@@ -110,7 +105,7 @@ export default function ApiKeysPage() {
   async function eliminar(keyId: string) {
     setEliminando(keyId);
     try {
-      await fetch(`${API_URL}/api/v1/api-keys/${keyId}`, { method: "DELETE" });
+      await apiFetch(`/api/v1/api-keys/${keyId}`, { method: "DELETE" });
       setKeys((prev) => prev.filter((k) => k.id !== keyId));
     } finally {
       setEliminando(null);

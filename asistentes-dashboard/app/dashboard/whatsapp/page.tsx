@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 const POLL_INTERVAL_MS = 3000;
 
 type Estado = "cargando" | "desconectado" | "esperando_qr" | "conectado" | "error";
@@ -39,8 +39,7 @@ export default function WhatsappPage() {
 
   async function checkStatus() {
     try {
-      const r = await fetch(`${API_URL}/api/v1/wpp/status`);
-      const data: StatusResp = await r.json();
+      const data = await apiFetch<StatusResp>("/api/v1/wpp/status");
 
       if (data.baileys_offline) {
         setEstado("error");
@@ -83,12 +82,7 @@ export default function WhatsappPage() {
     setIniciando(true);
     setErrorMsg(null);
     try {
-      const r = await fetch(`${API_URL}/api/v1/wpp/connect`, { method: "POST" });
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        throw new Error(d.detail || "Error al iniciar");
-      }
-      const data: StatusResp = await r.json();
+      const data = await apiFetch<StatusResp>("/api/v1/wpp/connect", { method: "POST" });
       if (data.qr) {
         setQrDataUrl(data.qr);
         setEstado("esperando_qr");
@@ -106,7 +100,7 @@ export default function WhatsappPage() {
   async function desconectar() {
     setDesconectando(true);
     try {
-      await fetch(`${API_URL}/api/v1/wpp/disconnect`, { method: "DELETE" });
+      await apiFetch("/api/v1/wpp/disconnect", { method: "DELETE" });
       setEstado("desconectado");
       setQrDataUrl(null);
     } finally {
