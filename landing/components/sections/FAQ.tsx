@@ -31,7 +31,7 @@ const PREGUNTAS = [
 
 export function FAQ() {
   return (
-    <section className="bg-oscuro px-4 py-24">
+    <section id="faq" className="bg-oscuro px-4 py-24">
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <span className="inline-block rounded-full border border-verde-600/30 bg-verde-600/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-verde-400">

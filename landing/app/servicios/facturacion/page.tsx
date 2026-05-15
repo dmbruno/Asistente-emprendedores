@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { CTAWaitlist } from "@/components/sections/CTAWaitlist";
 import { ComoFunciona } from "@/components/sections/ComoFunciona";
 import { FAQ } from "@/components/sections/FAQ";
-import { Footer } from "@/components/sections/Footer";
+import { FooterProducto } from "@/components/sections/FooterProducto";
 import { Hero } from "@/components/sections/Hero";
-import { Navbar } from "@/components/sections/Navbar";
+import { NavbarProducto } from "@/components/sections/NavbarProducto";
 import { Pricing } from "@/components/sections/Pricing";
 import { Problema } from "@/components/sections/Problema";
 
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 export default function AgenteContablePage() {
   return (
     <>
-      <Navbar />
+      <NavbarProducto />
       <main>
         <Hero />
         <ParaQuien />
@@ -42,7 +42,7 @@ export default function AgenteContablePage() {
         <FAQ />
         <CTAWaitlist />
       </main>
-      <Footer />
+      <FooterProducto />
     </>
   );
 }
