@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const rutas = [
     "",
     "/servicios/facturacion",
+    "/servicios/atencion",
     "/sobre-nosotros",
     "/precios",
     "/contacto",

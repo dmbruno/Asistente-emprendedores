@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #000; background: #fff; }
+  .page { width: 210mm; padding: 12mm; margin: 0 auto; background: #fff; }
+
+  /* HEADER */
+  .header { display: grid; grid-template-columns: 1fr 60px 1fr; border: 1.5px solid #000; }
+  .col-izq, .col-der { padding: 8px 10px; }
+  .col-cen {
+    border-left: 1.5px solid #000;
+    border-right: 1.5px solid #000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6px 4px; text-align: center;
+  }
+  .col-cen .letra { font-size: 38px; font-weight: bold; line-height: 1; }
+  .col-cen .cod { font-size: 8px; margin-top: 2px; }
+  .emisor-name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+  .lbl { font-weight: bold; }
+  .header-right { padding: 8px 10px; }
+  .header-right .factura-title { font-size: 20px; font-weight: bold; margin-bottom: 6px; border-bottom: 0.5px solid #ccc; padding-bottom: 4px; }
+  .header-right p { margin-bottom: 2px; }
+
+  /* PERIODO */
+  .periodo {
+    display: grid; grid-template-columns: 60% 40%;
+    border: 1.5px solid #000; border-top: none; padding: 5px 10px;
+  }
+  .periodo p { font-size: 10px; }
+  .periodo .right { text-align: right; }
+
+  /* RECEPTOR */
+  .receptor { border: 1.5px solid #000; border-top: none; }
+  .receptor-row { display: grid; grid-template-columns: 40% 60%; padding: 4px 10px; border-bottom: 0.5px solid #ccc; }
+  .receptor-row:last-child { border-bottom: none; }
+
+  /* DETALLE */
+  .detalle { margin-top: 6px; border: 1.5px solid #000; }
+  .det-header {
+    display: grid;
+    grid-template-columns: 6% 32% 9% 11% 13% 8% 9% 12%;
+    background: #ddd; font-weight: bold; font-size: 9px;
+    padding: 4px 6px; border-bottom: 1.5px solid #000;
+    text-align: center;
+  }
+  .det-row {
+    display: grid;
+    grid-template-columns: 6% 32% 9% 11% 13% 8% 9% 12%;
+    padding: 5px 6px;
+    font-size: 10px;
+    border-bottom: 0.5px solid #eee;
+    min-height: 22px;
+  }
+  .det-row .right { text-align: right; }
+  .det-row .center { text-align: center; }
+
+  /* TOTALES */
+  .totales { display: flex; justify-content: flex-end; margin-top: 2px; }
+  .totales-table { width: 42%; }
+  .tot-row { display: flex; justify-content: space-between; padding: 3px 6px; font-size: 11px; }
+  .tot-row.bold { font-weight: bold; border-top: 1px solid #000; }
+
+  /* FOOTER */
+  .sep { border-top: 1.5px solid #000; margin: 10px 0 6px 0; }
+  .footer { display: grid; grid-template-columns: 14% 22% 28% 36%; align-items: center; }
+  .footer-qr {
+    width: 62px; height: 62px; border: 1px solid #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7px; color: #666; text-align: center; padding: 4px;
+  }
+  .footer-arca { font-size: 9px; font-weight: bold; }
+  .footer-arca small { font-size: 7px; font-weight: normal; display: block; }
+  .footer-pag { text-align: center; font-size: 9px; }
+  .footer-cae { text-align: right; font-size: 10px; }
+  .footer-cae p { margin-bottom: 2px; }
+  .comprobante-auth { font-size: 9px; font-style: italic; margin-top: 4px; }
+  .disclaimer { font-size: 8px; color: #555; margin-top: 3px; }
+  .original { text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="original">ORIGINAL</div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <!-- Emisor -->
+    <div class="col-izq">
+      <div class="emisor-name">SERVICIOS TECNOLÓGICOS DEL SUR S.R.L.</div>
+      <p><span class="lbl">Razón Social:</span> SERVICIOS TECNOLÓGICOS DEL SUR S.R.L.</p>
+      <p><span class="lbl">Domicilio Comercial:</span> Av. Corrientes 1234, CABA</p>
+      <p><span class="lbl">Condición frente al IVA:</span> Responsable Inscripto</p>
+    </div>
+    <!-- Letra -->
+    <div class="col-cen">
+      <div class="letra">A</div>
+      <div class="cod">COD. 001</div>
+    </div>
+    <!-- Comprobante -->
+    <div class="header-right">
+      <div class="factura-title">FACTURA</div>
+      <p><span class="lbl">Punto de Venta:</span> 00001 &nbsp;&nbsp; <span class="lbl">Comp. Nro:</span> 00000891</p>
+      <p><span class="lbl">Fecha de Emisión:</span> 08/05/2026</p>
+      <br>
+      <p><span class="lbl">CUIT:</span> 30-71985632-4</p>
+      <p><span class="lbl">Ingresos Brutos:</span> 30-71985632-4</p>
+      <p><span class="lbl">Fecha de Inicio de Actividades:</span> 15/03/2018</p>
+    </div>
+  </div>
+
+  <!-- PERIODO -->
+  <div class="periodo">
+    <p><span class="lbl">Período Facturado Desde:</span> 08/05/2026 &nbsp;&nbsp; <span class="lbl">Hasta:</span> 08/05/2026</p>
+    <p class="right"><span class="lbl">Fecha de Vto. para el pago:</span> 08/05/2026</p>
+  </div>
+
+  <!-- RECEPTOR -->
+  <div class="receptor">
+    <div class="receptor-row">
+      <p><span class="lbl">CUIT:</span> 20-30420834-2</p>
+      <p><span class="lbl">Apellido y Nombre / Razón Social:</span> BRUNO DIEGO MARTIN</p>
+    </div>
+    <div class="receptor-row">
+      <p><span class="lbl">Condición frente al IVA:</span> Responsable Inscripto</p>
+      <p><span class="lbl">Domicilio:</span> Mendoza, Argentina</p>
+    </div>
+    <div class="receptor-row">
+      <p><span class="lbl">Condición de venta:</span> Contado</p>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div class="detalle">
+    <div class="det-header">
+      <span>Código</span>
+      <span>Producto / Servicio</span>
+      <span>Cantidad</span>
+      <span>U. Medida</span>
+      <span>Precio Unit.</span>
+      <span>% Bonif</span>
+      <span>Imp. Bonif.</span>
+      <span>Subtotal</span>
+    </div>
+    <div class="det-row">
+      <span class="center">001</span>
+      <span>Servicios de desarrollo de software — Mayo 2026</span>
+      <span class="right">1,00</span>
+      <span class="center">Unidades</span>
+      <span class="right">50.000,00</span>
+      <span class="right">0,00</span>
+      <span class="right">0,00</span>
+      <span class="right">50.000,00</span>
+    </div>
+    <div class="det-row"></div>
+    <div class="det-row"></div>
+    <div class="det-row"></div>
+    <div class="det-row"></div>
+    <div class="det-row"></div>
+  </div>
+
+  <!-- TOTALES -->
+  <div class="totales">
+    <div class="totales-table">
+      <div class="tot-row"><span>Subtotal:</span><span>$ 50.000,00</span></div>
+      <div class="tot-row"><span>I.V.A. 21%:</span><span>$ 10.500,00</span></div>
+      <div class="tot-row"><span>Importe Otros Tributos:</span><span>$ 0,00</span></div>
+      <div class="tot-row bold"><span>Importe Total:</span><span>$ 60.500,00</span></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="sep"></div>
+  <div class="footer">
+    <div class="footer-qr">QR AFIP<br>[verificar<br>en AFIP]</div>
+    <div class="footer-arca">
+      <strong>ARCA</strong>
+      <small>AGENCIA DE RECAUDACIÓN</small>
+      <small>Y CONTROL ADUANERO</small>
+    </div>
+    <div class="footer-pag">Pág. 1/1</div>
+    <div class="footer-cae">
+      <p><span class="lbl">CAE N°:</span> 74286513920847</p>
+      <p><span class="lbl">Fecha de Vto. de CAE:</span> 18/05/2026</p>
+    </div>
+  </div>
+  <div class="comprobante-auth"><em>Comprobante Autorizado</em></div>
+  <div class="disclaimer">Esta Agencia no se responsabiliza por los datos ingresados en el detalle de la operación</div>
+
+</div>
+</body>
+</html>
