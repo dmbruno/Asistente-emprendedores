@@ -65,7 +65,7 @@ const AGENTES: Agente[] = [
       { icon: <IcoResumen />, titulo: "Resumen por WhatsApp", desc: "Mandá 'resumen' al agente y recibís los totales del mes al instante." },
     ],
     ctaLabel: "Quiero probarlo →",
-    ctaHref: "#waitlist",
+    ctaHref: "/servicios/facturacion",
     footerNote: "Disponible ya · Sin contratos · Cancelá cuando quieras",
   },
   {
