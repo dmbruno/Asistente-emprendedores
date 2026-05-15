@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 const LINKS = [
   { href: "#servicios", label: "Servicios" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#precios", label: "Precios" },
+  { href: "#nosotros", label: "Nosotros" },
+  { href: "#contacto", label: "Contacto" },
 ];
 
 export function Navbar() {

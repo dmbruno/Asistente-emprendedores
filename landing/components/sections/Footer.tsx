@@ -20,9 +20,6 @@ export function Footer() {
             <a href="#nosotros" className="text-sm text-white/40 transition-colors hover:text-white/70">
               Nosotros
             </a>
-            <a href="#precios" className="text-sm text-white/40 transition-colors hover:text-white/70">
-              Precios
-            </a>
             <a href="#contacto" className="text-sm text-white/40 transition-colors hover:text-white/70">
               Contacto
             </a>
