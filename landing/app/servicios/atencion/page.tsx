@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 import { ContratacionForm } from "@/components/forms/ContratacionForm";
-import { Footer } from "@/components/sections/Footer";
-import { Navbar } from "@/components/sections/Navbar";
+import { FooterAtencion } from "@/components/sections/FooterAtencion";
+import { NavbarAtencion } from "@/components/sections/NavbarAtencion";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://propio-ia-landing.vercel.app";
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default function AsistenteAtencionPage() {
   return (
     <>
-      <Navbar />
+      <NavbarAtencion />
       <main>
         <Hero />
         <ComoTrabaja />
@@ -36,7 +36,7 @@ export default function AsistenteAtencionPage() {
         <Contratacion />
         <FAQAtencion />
       </main>
-      <Footer />
+      <FooterAtencion />
     </>
   );
 }
@@ -217,7 +217,7 @@ function ComoTrabaja() {
   ];
 
   return (
-    <section className="bg-crema px-4 py-24">
+    <section id="como-funciona" className="bg-crema px-4 py-24">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <span className="inline-block rounded-full bg-oscuro/5 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-oscuro/50">
@@ -512,7 +512,7 @@ function FAQAtencion() {
   ];
 
   return (
-    <section className="bg-oscuro px-4 py-24">
+    <section id="faq" className="bg-oscuro px-4 py-24">
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <span className="inline-block rounded-full border border-verde-600/30 bg-verde-600/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-verde-400">
