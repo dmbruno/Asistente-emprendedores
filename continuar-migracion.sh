@@ -1,36 +1,22 @@
 #!/usr/bin/env bash
 #
-# migrar-monorepo.sh
+# continuar-migracion.sh
 #
-# Reorganiza el repo asistentes-emprendedores a la estructura marketplace:
+# Retoma la migración del monorepo donde quedó después del error de git mv.
 #
-#   asistentes-emprendedores/
-#   ├── landing/                          (ex asistentes-landing)
-#   ├── productos/
-#   │   ├── contable/
-#   │   │   ├── backend/                  (ex asistentes-backend)
-#   │   │   ├── dashboard/                (ex asistentes-dashboard)
-#   │   │   └── admin/                    (ex asistentes-admin)
-#   │   └── atencion/
-#   │       └── bot/                      (copiado desde ../BotWhatsApp)
-#   ├── docs/                             (los .md sueltos van acá)
-#   ├── README.md
-#   ├── CLAUDE.md
-#   └── .gitignore
+# Estado actual esperado:
+#   ✅ landing/ ya existe
+#   ✅ productos/contable/dashboard/ ya existe
+#   ✅ productos/contable/admin/ ya existe
+#   ❌ asistentes-backend/ todavía existe (no se pudo mover)
+#   ❌ Pasos 4-7 del script original sin ejecutar
 #
 # Cómo correrlo:
-#   cd ~/Documents/Programacion/proyectosPropios/asistentes-emprendedores
-#   chmod +x migrar-monorepo.sh
-#   ./migrar-monorepo.sh
-#
-# Es interactivo: te va pidiendo confirmación en los pasos destructivos.
-# Si algo falla en el medio, podés rollback con: git reset --hard HEAD
-# (siempre y cuando antes hayas commiteado los cambios pendientes — el
-# script te avisa si los hay).
+#   chmod +x continuar-migracion.sh
+#   ./continuar-migracion.sh
 
 set -euo pipefail
 
-# Colores para mensajes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -49,121 +35,62 @@ confirm() {
   [[ $REPLY =~ ^[Yy]$ ]]
 }
 
-# ════════════════════════════════════════════════════════════════════════
-# CONFIG — ajustá esto si tus paths son distintos
-# ════════════════════════════════════════════════════════════════════════
-
-REPO_ROOT="$(pwd)"
 BOT_SOURCE="${HOME}/Documents/Programacion/proyectosPropios/BotWhatsApp"
 
 # ════════════════════════════════════════════════════════════════════════
-# PRE-FLIGHT CHECKS
+# PRE-CHECK — confirmar estado esperado
 # ════════════════════════════════════════════════════════════════════════
 
-header "Pre-flight checks"
+header "Pre-checks"
 
-# Estamos en el repo correcto?
-if [[ ! -d ".git" ]] || [[ ! -d "asistentes-landing" ]]; then
-  err "No parece que estemos en la raíz del repo asistentes-emprendedores."
-  err "Esperaba encontrar .git/ y asistentes-landing/. Salgo."
+if [[ ! -d "asistentes-backend" ]]; then
+  err "No encuentro asistentes-backend/. Capaz ya completaste la migración."
+  err "Si fue así, no necesitás correr este script."
   exit 1
 fi
-ok "Repo correcto: $(basename "$REPO_ROOT")"
+ok "asistentes-backend/ existe (esperado)"
 
-# Branch
-BRANCH=$(git branch --show-current)
-info "Branch actual: $BRANCH"
-
-# Working tree limpio?
-if [[ -n "$(git status --porcelain)" ]]; then
-  warn "Tenés cambios sin commitear:"
-  git status --short
-  echo ""
-  warn "RECOMENDACIÓN: commiteá o stasheá antes de seguir, así si algo sale"
-  warn "mal podés volver con: git reset --hard HEAD"
-  echo ""
-  if ! confirm "¿Seguir igual?"; then
-    info "Salgo. Hacé commit y volvé a correr el script."
-    exit 0
-  fi
-fi
-
-# Bot existe?
-if [[ ! -d "$BOT_SOURCE" ]]; then
-  err "No encontré el bot en: $BOT_SOURCE"
-  err "Editá BOT_SOURCE arriba en este script con el path correcto."
-  exit 1
-fi
-ok "Bot encontrado en: $BOT_SOURCE"
-
-# Última oportunidad de cancelar
-echo ""
-warn "Esto va a:"
-warn "  1. Borrar copias espejo desactualizadas (asistentes-backend/asistentes-*)"
-warn "  2. Renombrar las 4 carpetas asistentes-* a la nueva estructura"
-warn "  3. Mover los .md sueltos a docs/"
-warn "  4. Copiar el bot desde $BOT_SOURCE → productos/atencion/bot/"
-warn "  5. Crear README.md y CLAUDE.md nuevos en la raíz"
-echo ""
-if ! confirm "¿Arrancamos?"; then
-  info "Cancelado. No se tocó nada."
-  exit 0
-fi
+[[ -d "landing" ]] && ok "landing/ existe" || warn "landing/ NO existe (raro, fijate)"
+[[ -d "productos/contable/dashboard" ]] && ok "productos/contable/dashboard/ existe" || warn "falta dashboard"
+[[ -d "productos/contable/admin" ]] && ok "productos/contable/admin/ existe" || warn "falta admin"
 
 # ════════════════════════════════════════════════════════════════════════
-# PASO 1 — Limpieza de copias espejo
+# PASO 3 (retake) — destrabar y completar el git mv del backend
 # ════════════════════════════════════════════════════════════════════════
 
-header "Paso 1/6 — Limpiar copias espejo desactualizadas"
+header "Paso 3/7 (retake) — Destrabar y mover asistentes-backend"
 
-# Estas carpetas existen dentro de asistentes-backend/ como mirrors viejos.
-# No están tracked en git (untracked), así que rm -rf es seguro.
-for mirror in asistentes-landing asistentes-dashboard asistentes-admin asistentes-backend; do
-  if [[ -d "asistentes-backend/$mirror" ]]; then
-    info "Borrando asistentes-backend/$mirror/"
-    rm -rf "asistentes-backend/$mirror"
+info "Sacando del index de git los archivos que ya borramos del disco..."
+
+# Estos los borró el script original con rm -f
+for f in \
+  asistentes-backend/GUIA_ONBOARDING_USUARIO.md \
+  asistentes-backend/GUIA_TESTING_Y_DEPLOY.md \
+  asistentes-backend/INSTRUCTIVO_CERTIFICADO_AFIP.md
+do
+  if git ls-files --error-unmatch "$f" &>/dev/null; then
+    git rm --cached "$f" &>/dev/null && ok "Removido del index: $f"
   fi
 done
 
-# .md duplicados dentro de asistentes-backend/
-for md in GUIA_ONBOARDING_USUARIO.md GUIA_TESTING_Y_DEPLOY.md INSTRUCTIVO_CERTIFICADO_AFIP.md; do
-  if [[ -f "asistentes-backend/$md" ]]; then
-    info "Borrando asistentes-backend/$md"
-    rm -f "asistentes-backend/$md"
+# Defensive: limpiar cualquier OTRO archivo tracked que ya no exista en disco
+info "Buscando otros archivos tracked que ya no existen en disco..."
+MISSING_COUNT=0
+while IFS= read -r f; do
+  if [[ ! -e "$f" ]]; then
+    git rm --cached "$f" &>/dev/null
+    info "  Removido del index: $f"
+    MISSING_COUNT=$((MISSING_COUNT + 1))
   fi
-done
+done < <(git ls-files asistentes-backend/)
 
-ok "Limpieza terminada"
+if [[ $MISSING_COUNT -gt 0 ]]; then
+  ok "Limpiados $MISSING_COUNT archivos faltantes del index"
+else
+  ok "No había más archivos faltantes"
+fi
 
-# ════════════════════════════════════════════════════════════════════════
-# PASO 2 — Crear estructura nueva
-# ════════════════════════════════════════════════════════════════════════
-
-header "Paso 2/6 — Crear estructura de carpetas"
-
-mkdir -p productos/contable
-mkdir -p productos/atencion
-mkdir -p docs
-
-ok "productos/contable/ creado"
-ok "productos/atencion/ creado"
-ok "docs/ creado"
-
-# ════════════════════════════════════════════════════════════════════════
-# PASO 3 — Mover carpetas con git mv (preserva historial)
-# ════════════════════════════════════════════════════════════════════════
-
-header "Paso 3/6 — Mover carpetas con git mv"
-
-git mv asistentes-landing landing
-ok "asistentes-landing → landing"
-
-git mv asistentes-dashboard productos/contable/dashboard
-ok "asistentes-dashboard → productos/contable/dashboard"
-
-git mv asistentes-admin productos/contable/admin
-ok "asistentes-admin → productos/contable/admin"
-
+info "Ahora sí, moviendo asistentes-backend → productos/contable/backend..."
 git mv asistentes-backend productos/contable/backend
 ok "asistentes-backend → productos/contable/backend"
 
@@ -171,66 +98,89 @@ ok "asistentes-backend → productos/contable/backend"
 # PASO 4 — Mover documentación y archivos sueltos
 # ════════════════════════════════════════════════════════════════════════
 
-header "Paso 4/6 — Mover documentación y archivos sueltos"
+header "Paso 4/7 — Mover documentación y archivos sueltos"
 
-# .md sueltos en raíz → docs/
+mkdir -p docs
+
 for md in GUIA_ONBOARDING_USUARIO.md GUIA_TESTING_Y_DEPLOY.md INSTRUCTIVO_CERTIFICADO_AFIP.md deploy.md; do
   if [[ -f "$md" ]]; then
-    git mv "$md" "docs/$md"
+    if git ls-files --error-unmatch "$md" &>/dev/null; then
+      git mv "$md" "docs/$md"
+    else
+      mv "$md" "docs/$md"
+    fi
     ok "$md → docs/$md"
   fi
 done
 
-# Script de cert AFIP → al backend
 if [[ -f "cargar_afip_cert.py" ]]; then
-  git mv cargar_afip_cert.py productos/contable/backend/cargar_afip_cert.py
+  if git ls-files --error-unmatch "cargar_afip_cert.py" &>/dev/null; then
+    git mv cargar_afip_cert.py productos/contable/backend/cargar_afip_cert.py
+  else
+    mv cargar_afip_cert.py productos/contable/backend/cargar_afip_cert.py
+  fi
   ok "cargar_afip_cert.py → productos/contable/backend/"
 fi
 
-# test_e2e.sh es del backend / contable
 if [[ -f "test_e2e.sh" ]]; then
-  git mv test_e2e.sh productos/contable/backend/test_e2e.sh
+  if git ls-files --error-unmatch "test_e2e.sh" &>/dev/null; then
+    git mv test_e2e.sh productos/contable/backend/test_e2e.sh
+  else
+    mv test_e2e.sh productos/contable/backend/test_e2e.sh
+  fi
   ok "test_e2e.sh → productos/contable/backend/"
 fi
 
-# Cert files (.csr, .key) NO están en git pero existen en la raíz.
-# Los muevo con mv normal (no git mv) — están gitignoreados.
+# Certs (gitignored, no tracked)
+shopt -s nullglob
 for cert in *.csr *.key; do
   if [[ -f "$cert" ]]; then
     mkdir -p productos/contable/backend/certs
     mv "$cert" "productos/contable/backend/certs/$cert"
-    ok "$cert → productos/contable/backend/certs/  (untracked, no afecta git)"
+    ok "$cert → productos/contable/backend/certs/  (untracked)"
   fi
 done
+shopt -u nullglob
 
-# HTMLs de prueba — opcional, los muevo a docs/samples/
 if [[ -f "factura_a_prueba.html" ]]; then
   mkdir -p docs/samples
-  git mv factura_a_prueba.html docs/samples/factura_a_prueba.html
+  if git ls-files --error-unmatch "factura_a_prueba.html" &>/dev/null; then
+    git mv factura_a_prueba.html docs/samples/factura_a_prueba.html
+  else
+    mv factura_a_prueba.html docs/samples/factura_a_prueba.html
+  fi
   ok "factura_a_prueba.html → docs/samples/"
 fi
 
 if [[ -f "instagram-carousel.html" ]]; then
   mkdir -p docs/marketing
-  git mv instagram-carousel.html docs/marketing/instagram-carousel.html
+  if git ls-files --error-unmatch "instagram-carousel.html" &>/dev/null; then
+    git mv instagram-carousel.html docs/marketing/instagram-carousel.html
+  else
+    mv instagram-carousel.html docs/marketing/instagram-carousel.html
+  fi
   ok "instagram-carousel.html → docs/marketing/"
 fi
 
-# venv/ (si está en raíz) — gitignoreado, lo movemos al backend
 if [[ -d "venv" ]]; then
   mv venv productos/contable/backend/venv
-  ok "venv/ → productos/contable/backend/  (untracked, no afecta git)"
+  ok "venv/ → productos/contable/backend/  (untracked)"
 fi
 
 # ════════════════════════════════════════════════════════════════════════
 # PASO 5 — Copiar el bot
 # ════════════════════════════════════════════════════════════════════════
 
-header "Paso 5/6 — Copiar el bot desde $BOT_SOURCE"
+header "Paso 5/7 — Copiar el bot"
+
+if [[ ! -d "$BOT_SOURCE" ]]; then
+  err "No encontré el bot en: $BOT_SOURCE"
+  err "Editá BOT_SOURCE arriba con el path correcto."
+  exit 1
+fi
 
 mkdir -p productos/atencion/bot
 
-# rsync con exclusiones (sin node_modules, sin .git, sin dist)
 rsync -a \
   --exclude=node_modules \
   --exclude=.git \
@@ -241,14 +191,12 @@ rsync -a \
   --exclude=".env.local" \
   "$BOT_SOURCE/" "productos/atencion/bot/"
 
-# Agregar al staging
 git add productos/atencion/bot
-
-ok "Bot copiado a productos/atencion/bot/  (sin node_modules, sin .git, sin .env)"
+ok "Bot copiado a productos/atencion/bot/"
 info "El repo original BotWhatsApp queda intacto como backup."
 
 # ════════════════════════════════════════════════════════════════════════
-# PASO 6 — Generar README.md y CLAUDE.md raíz nuevos
+# PASO 6 — README.md y CLAUDE.md raíz
 # ════════════════════════════════════════════════════════════════════════
 
 header "Paso 6/7 — Crear README.md y CLAUDE.md de la raíz"
@@ -295,14 +243,6 @@ asistentes-emprendedores/
 3. Crear su página de detalle en `landing/app/servicios/<slug>/page.tsx`.
 4. Sumar la ruta a `landing/app/sitemap.ts`.
 5. Configurar el deploy correspondiente en Vercel/Render/Railway.
-
-## Stack por subproyecto
-
-- **landing** — Next.js 14 (App Router), Tailwind, Supabase (waitlist), Nodemailer (SMTP)
-- **productos/contable/backend** — Python 3, Flask, AFIP WSAA/WSFE
-- **productos/contable/dashboard** — Next.js 14, Tailwind, Supabase auth
-- **productos/contable/admin** — Next.js 14, Tailwind
-- **productos/atencion/bot** — Node 18+, TypeScript, OpenAI, Evolution API
 EOF
 ok "README.md creado"
 
@@ -389,27 +329,27 @@ git add README.md CLAUDE.md
 header "Paso 7/7 — Verificación de estructura"
 
 echo ""
-info "Estructura resultante:"
+info "Estructura final (3 niveles):"
 echo ""
 
-tree -L 3 -I 'node_modules|.next|dist|venv|__pycache__' . 2>/dev/null || find . -maxdepth 3 -type d \
-  ! -path '*/node_modules*' ! -path '*/\.next*' ! -path '*/dist*' \
-  ! -path '*/venv*' ! -path '*/__pycache__*' ! -path '*/\.git*' \
-  | sort
+if command -v tree &>/dev/null; then
+  tree -L 3 -I 'node_modules|.next|dist|venv|__pycache__|.git' .
+else
+  find . -maxdepth 3 -type d \
+    ! -path '*/node_modules*' ! -path '*/\.next*' ! -path '*/dist*' \
+    ! -path '*/venv*' ! -path '*/__pycache__*' ! -path '*/\.git*' \
+    | sort
+fi
 
 echo ""
-ok "Reorganización completada."
+ok "Migración completada."
 echo ""
 warn "PRÓXIMOS PASOS:"
-echo "  1. Revisar el cambio:       git status"
-echo "  2. Verificar que typechecks pasan:"
-echo "     cd landing && npm run type-check"
-echo "     cd productos/atencion/bot && npm run typecheck"
+echo "  1. Revisar:                 git status"
+echo "  2. Verificar typechecks:"
+echo "     cd landing && npm install && npm run type-check"
+echo "     cd ../productos/atencion/bot && npm install && npm run typecheck"
 echo "  3. Commit:                  git add -A && git commit -m 'refactor: reorganizar a estructura marketplace con productos/'"
-echo "  4. En Vercel/Render actualizar los Root Directory de cada deploy:"
-echo "     - landing               → root: landing"
-echo "     - dashboard contable    → root: productos/contable/dashboard"
-echo "     - admin contable        → root: productos/contable/admin"
-echo "     - backend contable      → root: productos/contable/backend"
-echo "  5. Borrar el repo BotWhatsApp original cuando confirmes que el bot anda"
+echo "  4. Push:                    git push"
+echo "  5. Actualizar root directory en Vercel/Render para cada deploy"
 echo ""

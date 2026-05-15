@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Green rounded square background -->
-  <rect width="100" height="100" rx="22" fill="#16a34a"/>
-  <!-- Chat bubble body -->
-  <rect x="16" y="14" width="66" height="52" rx="10" fill="white"/>
-  <!-- Chat bubble tail (bottom-left) -->
-  <path d="M16,58 L16,78 L34,64" fill="white"/>
-</svg>
