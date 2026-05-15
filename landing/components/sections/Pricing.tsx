@@ -4,6 +4,7 @@ const PLANES = [
   {
     nombre: "Trial",
     precio: "Gratis",
+    precioAnterior: undefined,
     detalle: "Para conocer el producto",
     features: [
       "WhatsApp dedicado",
@@ -18,6 +19,7 @@ const PLANES = [
   {
     nombre: "Solo",
     precio: "$49.999",
+    precioAnterior: "$71.427",
     detalle: "por mes · sin sorpresas",
     features: [
       "Todo lo del Trial",
@@ -33,6 +35,7 @@ const PLANES = [
   {
     nombre: "Negocio",
     precio: "$69.999",
+    precioAnterior: "$99.998",
     detalle: "por mes",
     features: [
       "Todo lo de Solo",
@@ -86,10 +89,22 @@ export function Pricing() {
               <div className="font-display text-sm font-bold uppercase tracking-widest text-oscuro/40">
                 {p.nombre}
               </div>
-              <div className="mt-3 font-display text-3xl font-extrabold text-oscuro">
-                {p.precio}
+              <div className="mt-3 flex items-end gap-2">
+                <span className="font-display text-3xl font-extrabold text-oscuro">
+                  {p.precio}
+                </span>
+                {p.precioAnterior && (
+                  <span className="mb-1 text-sm text-slate-400 line-through">
+                    {p.precioAnterior}
+                  </span>
+                )}
               </div>
-              <div className="text-sm text-slate-400">{p.detalle}</div>
+              {p.precioAnterior && (
+                <span className="mt-1 inline-block w-fit rounded-full bg-verde-100 px-2 py-0.5 text-xs font-bold text-verde-700">
+                  30% OFF — precio de lanzamiento
+                </span>
+              )}
+              <div className="mt-1 text-sm text-slate-400">{p.detalle}</div>
 
               <ul className="mt-6 flex-1 space-y-2.5">
                 {p.features.map((f) => (
