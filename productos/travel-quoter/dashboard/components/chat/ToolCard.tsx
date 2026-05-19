@@ -41,65 +41,29 @@ function ToolLoading({ name }: { name: string }) {
 // ── Vuelos ───────────────────────────────────────────────────────────────────
 
 function FlightsCard({ data }: { data: Record<string, unknown> }) {
-  const flights = (data.flights as FlightOption[]) ?? [];
   const note = data.note as string | undefined;
+  const exactFlights = (data.exact_date_flights as unknown[]) ?? (data.flights as unknown[]) ?? [];
+  const flexFlights  = (data.flexible_flights as unknown[]) ?? [];
+  const total = exactFlights.length || flexFlights.length;
+  const cheapest = data.cheapest_price_usd as number | undefined;
+  const origin = data.origin as string | undefined;
+  const destination = data.destination as string | undefined;
 
   return (
-    <div className="my-2 space-y-2">
-      {note && (
-        <p className="rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
-          ⚠ {note}
-        </p>
-      )}
-      {flights.map((f, i) => (
-        <FlightOptionCard key={i} flight={f} />
-      ))}
-    </div>
-  );
-}
-
-type FlightOption = {
-  airline: string;
-  total_amount: string;
-  total_currency: string;
-  slices: { duration: string; stops: number; departure: string; arrival: string }[];
-};
-
-function FlightOptionCard({ flight }: { flight: FlightOption }) {
-  const slice = flight.slices?.[0];
-  const dep = slice?.departure ? new Date(slice.departure) : null;
-  const arr = slice?.arrival   ? new Date(slice.arrival)   : null;
-  const fmt = (d: Date | null) =>
-    d ? d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "—";
-  const dur = slice?.duration?.replace("PT", "").replace("H", "h ").replace("M", "min") ?? "—";
-
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all hover:border-verde-300 hover:shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
-            </svg>
-          </span>
-          <span className="text-sm font-semibold text-slate-800">{flight.airline}</span>
-        </div>
-        <span className="font-display text-base font-bold text-verde-600">
-          {flight.total_currency} {parseFloat(flight.total_amount).toLocaleString("es-AR")}
+    <div className="my-1 flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span className="text-xs text-slate-600">
+          Vuelos{origin && destination ? ` ${origin} → ${destination}` : ""} consultados
+          {cheapest ? ` · desde USD ${cheapest}` : total > 0 ? ` · ${total} opciones` : ""}
         </span>
       </div>
-      {slice && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-          <span>{fmt(dep)}</span>
-          <div className="flex flex-1 items-center gap-1">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px]">
-              {slice.stops === 0 ? "Directo" : `${slice.stops} escala`} · {dur}
-            </span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-          <span>{fmt(arr)}</span>
-        </div>
+      {note && (
+        <p className="w-full rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
+          ⚠ {note}
+        </p>
       )}
     </div>
   );
@@ -107,41 +71,26 @@ function FlightOptionCard({ flight }: { flight: FlightOption }) {
 
 // ── Hoteles ──────────────────────────────────────────────────────────────────
 
-type HotelOption = { name: string; stars: number; price_per_night_usd: number; location: string; amenities?: string[] };
-
 function HotelsCard({ data }: { data: Record<string, unknown> }) {
-  const hotels = (data.hotels as HotelOption[]) ?? [];
+  const hotels = (data.hotels as unknown[]) ?? [];
   const note = data.note as string | undefined;
+  const destination = data.destination as string | undefined;
 
   return (
-    <div className="my-2 space-y-2">
+    <div className="my-1 flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span className="text-xs text-slate-600">
+          Hoteles{destination ? ` en ${destination}` : ""} consultados · {hotels.length} opciones
+        </span>
+      </div>
       {note && (
-        <p className="rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
+        <p className="w-full rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
           ⚠ {note}
         </p>
       )}
-      {hotels.map((h, i) => (
-        <div key={i} className="rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all hover:border-cielo-300 hover:shadow-sm">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-semibold text-slate-800">{h.name}</span>
-                <span className="text-[11px] text-dorado-500">{"★".repeat(h.stars)}</span>
-              </div>
-              <p className="mt-0.5 text-xs text-slate-400">{h.location}</p>
-              {h.amenities && (
-                <p className="mt-1 text-[11px] text-slate-400">{h.amenities.join(" · ")}</p>
-              )}
-            </div>
-            <div className="shrink-0 text-right">
-              <span className="font-display text-base font-bold text-slate-800">
-                USD {h.price_per_night_usd.toLocaleString("es-AR")}
-              </span>
-              <p className="text-[10px] text-slate-400">por noche</p>
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
