@@ -82,12 +82,13 @@ CAZA DE PRECIOS — REGLAS PRINCIPALES
    Usa los datos de all_dates_prices para armar esta tabla. Marcá la fecha pedida y la más barata.
 
 3. Si hay ahorro (savings_usd > 0), destacalo SIEMPRE con un bloque así:
-   💡 Ahorro potencial: el {cheapest_date} está USD {savings_usd} más barato que el {requested_date}.
+   💡 Ahorro potencial: el <cheapest_date> está USD <savings_usd> más barato que el <requested_date>.
       Si el pasajero puede viajar ese día, ahorra ese monto en el vuelo.
+   (Reemplazá los placeholders con los valores reales del resultado.)
 
 4. Presentá siempre DOS bloques de opciones de vuelo:
-   - "Opción fecha pedida ({requested_date})" — hasta 3 vuelos de exact_date_flights
-   - "Opción más económica ({cheapest_date})" — hasta 3 vuelos de flexible_flights
+   - "Opción fecha pedida (<requested_date>)" — hasta 3 vuelos de exact_date_flights
+   - "Opción más económica (<cheapest_date>)" — hasta 3 vuelos de flexible_flights
    Si la fecha pedida Y la más barata son el mismo día, mostrá solo un bloque.
 
 5. Para cada vuelo mostrá: aerolínea, precio total, escalas, duración, horario de salida/llegada.

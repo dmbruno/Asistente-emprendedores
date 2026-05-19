@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Travel Quoter — PropioIA",
+  title: "Cotizador de Viajes — PropioIA",
   description: "Cotizá viajes con IA. Vuelos, hoteles y presupuesto en segundos.",
 };
 

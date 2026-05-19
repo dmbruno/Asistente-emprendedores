@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="font-display text-sm font-bold text-white block leading-tight">
               Propio<span className="text-verde-400">IA</span>
             </span>
-            <span className="text-[10px] text-white/30 font-medium tracking-wide">Travel Quoter</span>
+            <span className="text-[10px] text-white/30 font-medium tracking-wide">Cotizador de Viajes</span>
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             Propio<span className="text-verde-400">IA</span>
           </span>
         </div>
-        <span className="text-xs text-white/30">Travel Quoter</span>
+        <span className="text-xs text-white/30">Cotizador de Viajes</span>
       </div>
 
       {/* Mobile bottom nav */}

@@ -61,7 +61,7 @@ export default function LoginPage() {
             <span className="font-display text-base font-bold text-slate-900">
               Propio<span className="text-verde-600">IA</span>
             </span>
-            <p className="text-xs text-slate-400 leading-none">Travel Quoter</p>
+            <p className="text-xs text-slate-400 leading-none">Cotizador de Viajes</p>
           </div>
         </div>
 
