@@ -1,6 +1,7 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ToolCard } from "./ToolCard";
 
 export type ToolEvent = {
@@ -56,6 +57,7 @@ export function MessageBubble({ message }: { message: Message }) {
               message.streaming && message.content ? "streaming-cursor" : ""
             } ${message.streaming && !message.content ? "streaming-cursor" : ""}`}>
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                   strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
@@ -69,6 +71,37 @@ export function MessageBubble({ message }: { message: Message }) {
                     </a>
                   ),
                   img: () => null,
+                  table: ({ children }) => (
+                    <div className="my-3 overflow-x-auto rounded-lg border border-slate-200">
+                      <table className="w-full text-sm">{children}</table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      {children}
+                    </thead>
+                  ),
+                  tbody: ({ children }) => (
+                    <tbody className="divide-y divide-slate-100">{children}</tbody>
+                  ),
+                  tr: ({ children }) => <tr className="hover:bg-slate-50/60 transition-colors">{children}</tr>,
+                  th: ({ children }) => (
+                    <th className="px-4 py-2.5 text-left whitespace-nowrap">{children}</th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-4 py-2.5 text-slate-700 whitespace-nowrap">{children}</td>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote className="my-2 border-l-4 border-verde-400 pl-3 text-slate-500 italic">
+                      {children}
+                    </blockquote>
+                  ),
+                  code: ({ children }) => (
+                    <code className="rounded bg-slate-100 px-1 py-0.5 text-xs font-mono text-slate-700">
+                      {children}
+                    </code>
+                  ),
+                  h3: ({ children }) => <h3 className="mb-1 mt-3 font-semibold text-slate-900">{children}</h3>,
                 }}
               >
                 {message.content || ""}
