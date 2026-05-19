@@ -292,8 +292,8 @@ export function ChatWindow({ sessionId, initialProvider = "anthropic", onTitleUp
       <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-4 md:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Provider selector */}
-          <div className="mb-3 flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 mr-1">Modelo:</span>
+          <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+            <span className="text-xs text-slate-400 mr-1 shrink-0">Modelo:</span>
             {PROVIDERS.map((p) => (
               <button
                 key={p.id}

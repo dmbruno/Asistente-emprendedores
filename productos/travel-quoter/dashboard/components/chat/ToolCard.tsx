@@ -96,21 +96,25 @@ function FlightsCard({ data }: { data: Record<string, unknown> }) {
             return (
               <div
                 key={date}
-                className={`flex items-center justify-between px-4 py-2 ${
+                className={`flex items-center justify-between gap-2 px-3 py-2 sm:px-4 ${
                   isCheapest ? "bg-verde-50" : isRequested ? "bg-slate-50" : ""
                 }`}
               >
-                <span className={`text-xs ${isCheapest || isRequested ? "font-semibold text-slate-800" : "text-slate-500"}`}>
-                  {fmt(date)}
-                  {isBoth && <span className="ml-2 text-[10px] text-slate-400">pedida + más barata</span>}
-                  {isRequested && !isBoth && <span className="ml-2 text-[10px] text-slate-400">fecha pedida</span>}
-                  {isCheapest && !isBoth && <span className="ml-2 text-[10px] text-verde-600">más barata</span>}
-                </span>
-                <div className="flex items-center gap-2">
+                <div className="min-w-0">
+                  <span className={`text-xs ${isCheapest || isRequested ? "font-semibold text-slate-800" : "text-slate-500"}`}>
+                    {fmt(date)}
+                  </span>
+                  {(isBoth || isRequested || isCheapest) && (
+                    <span className={`ml-1.5 text-[10px] ${isCheapest ? "text-verde-600" : "text-slate-400"}`}>
+                      {isBoth ? "pedida · más barata" : isRequested ? "pedida" : "más barata"}
+                    </span>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
                   <span className={`font-display text-sm font-bold ${isCheapest ? "text-verde-600" : "text-slate-800"}`}>
                     USD {price.toLocaleString("es-AR")}
                   </span>
-                  {isCheapest && <span className="text-verde-500">✅</span>}
+                  {isCheapest && <span className="text-sm">✅</span>}
                 </div>
               </div>
             );
