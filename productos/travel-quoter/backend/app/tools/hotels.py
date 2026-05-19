@@ -48,7 +48,11 @@ TOOL_DEFINITION = {
 }
 
 
-async def search_hotels(serpapi_key: str, **params) -> dict:
+async def search_hotels(serpapi_key: str, allow_real_data: bool = True, **params) -> dict:
+    if not allow_real_data:
+        result = _mock_results(params)
+        result["note"] = "Plan free: alcanzaste el límite de 3 cotizaciones reales este mes. Estos son datos de ejemplo. Suscribite al plan Pro para cotizaciones reales ilimitadas."
+        return result
     if not serpapi_key:
         return _mock_results(params)
 

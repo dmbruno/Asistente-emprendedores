@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/servicios/facturacion",
     "/servicios/atencion",
+    "/servicios/cotizador",
     "/sobre-nosotros",
     "/precios",
     "/contacto",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Annotated, Any, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -13,6 +14,7 @@ from supabase import create_client, Client
 
 from app.agent import stream_agent
 from app.config import settings
+from app.routers.suscripcion import router as suscripcion_router, FREE_LIMIT, _ensure_row, _reset_if_new_month
 from app.utils.auth import CurrentUser
 from app.utils.crypto import CryptoError, decrypt, encrypt, hint
 
@@ -23,6 +25,7 @@ logger.info("SerpAPI configurada: %s", bool(settings.serpapi_api_key))
 logger.info("SerpAPI key prefix: %s", settings.serpapi_api_key[:8] if settings.serpapi_api_key else "VACÍA")
 
 app = FastAPI(title="Travel Quoter API", version="0.1.0")
+app.include_router(suscripcion_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -191,8 +194,27 @@ async def chat_stream(user: CurrentUser, body: ChatRequest):
     recipient_email = (row.data or {}).get("recipient_email") or user.get("email", "")
     messages = [m.model_dump() for m in body.messages]
 
+    # ── Cuota del plan free ────────────────────────────────────────────────────
+    # Una "cotización" = primera pregunta de la conversación (len == 1)
+    is_new_conversation = len(messages) == 1
+    allow_real_data = True
+
+    if is_new_conversation:
+        plan_row = _ensure_row(user_id)
+        plan_row = _reset_if_new_month(user_id, plan_row)
+        plan = plan_row.get("plan", "free")
+        cotizaciones = plan_row.get("cotizaciones_mes", 0)
+
+        if plan == "free" and cotizaciones >= FREE_LIMIT:
+            allow_real_data = False
+        else:
+            _supabase().table("travel_user_configs").update({
+                "cotizaciones_mes": cotizaciones + 1,
+                "cotizaciones_mes_reset": date.today().isoformat(),
+            }).eq("user_id", user_id).execute()
+
     async def event_generator():
-        async for chunk in stream_agent(messages, api_key, serpapi_key, provider=provider, user_email=recipient_email):
+        async for chunk in stream_agent(messages, api_key, serpapi_key, provider=provider, user_email=recipient_email, allow_real_data=allow_real_data):
             yield chunk
 
     return StreamingResponse(

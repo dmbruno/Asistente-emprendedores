@@ -51,6 +51,17 @@ class Settings(BaseSettings):
     # ── SerpAPI (plataforma — clave del dueño de la app, no BYOK) ─────────────
     serpapi_api_key: str = Field(default="", description="SerpAPI key para Google Flights/Hotels/Web")
 
+    # ── Mercado Pago ───────────────────────────────────────────────────────────
+    mp_access_token: str = Field(default="", description="Mercado Pago Access Token")
+    mp_public_key: str = Field(default="", description="Mercado Pago Public Key")
+    mp_webhook_url: str = Field(default="", description="URL pública del backend para webhooks de MP")
+    mp_webhook_secret: str = Field(default="", description="Secret HMAC para validar webhooks de MP")
+    mp_back_url: str = Field(default="https://cotizador-viajes-xi.vercel.app/dashboard/suscripcion")
+
+    @property
+    def mp_configured(self) -> bool:
+        return bool(self.mp_access_token and self.mp_public_key)
+
     @field_validator("quotes_storage_path")
     @classmethod
     def create_quotes_dir(cls, v: str) -> str:

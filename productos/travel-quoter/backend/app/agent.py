@@ -81,11 +81,11 @@ def _sse_event(event_type: str, data: Any) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-async def _dispatch_tool(tool_name: str, tool_input: dict, serpapi_key: str) -> Any:
+async def _dispatch_tool(tool_name: str, tool_input: dict, serpapi_key: str, allow_real_data: bool = True) -> Any:
     if tool_name == "search_flights":
-        return await search_flights(serpapi_key, **tool_input)
+        return await search_flights(serpapi_key, allow_real_data=allow_real_data, **tool_input)
     elif tool_name == "search_hotels":
-        return await search_hotels(serpapi_key, **tool_input)
+        return await search_hotels(serpapi_key, allow_real_data=allow_real_data, **tool_input)
     elif tool_name == "search_web":
         return await search_web(serpapi_key, **tool_input)
     elif tool_name == "build_quote":
@@ -122,6 +122,7 @@ async def _stream_anthropic(
     api_key: str,
     serpapi_key: str,
     user_email: str = "",
+    allow_real_data: bool = True,
 ) -> AsyncGenerator[str, None]:
     client = anthropic.AsyncAnthropic(api_key=api_key)
     current_messages = list(messages)
@@ -192,7 +193,7 @@ async def _stream_anthropic(
         tool_results = []
         for tu in tool_uses:
             try:
-                result = await _dispatch_tool(tu["name"], tu["input"], serpapi_key)
+                result = await _dispatch_tool(tu["name"], tu["input"], serpapi_key, allow_real_data=allow_real_data)
             except Exception as e:
                 logger.error("Tool %s error: %s", tu["name"], e)
                 result = {"error": str(e)[:200]}
@@ -221,6 +222,7 @@ async def _stream_openai(
     model: str = "gpt-4o",
     base_url: Optional[str] = None,
     user_email: str = "",
+    allow_real_data: bool = True,
 ) -> AsyncGenerator[str, None]:
     client_kwargs: dict[str, Any] = {"api_key": api_key}
     if base_url:
@@ -302,7 +304,7 @@ async def _stream_openai(
             except json.JSONDecodeError:
                 tool_input = {}
             try:
-                result = await _dispatch_tool(tc["name"], tool_input, serpapi_key)
+                result = await _dispatch_tool(tc["name"], tool_input, serpapi_key, allow_real_data=allow_real_data)
             except Exception as e:
                 logger.error("Tool %s error: %s", tc["name"], e)
                 result = {"error": str(e)[:200]}
@@ -329,9 +331,10 @@ async def stream_agent(
     serpapi_key: str = "",
     provider: str = "anthropic",
     user_email: str = "",
+    allow_real_data: bool = True,
 ) -> AsyncGenerator[str, None]:
     if provider == "openai":
-        async for chunk in _stream_openai(messages, api_key, serpapi_key, model=DEFAULT_MODELS["openai"], user_email=user_email):
+        async for chunk in _stream_openai(messages, api_key, serpapi_key, model=DEFAULT_MODELS["openai"], user_email=user_email, allow_real_data=allow_real_data):
             yield chunk
     elif provider == "gemini":
         async for chunk in _stream_openai(
@@ -339,8 +342,9 @@ async def stream_agent(
             model=DEFAULT_MODELS["gemini"],
             base_url=GEMINI_BASE_URL,
             user_email=user_email,
+            allow_real_data=allow_real_data,
         ):
             yield chunk
     else:
-        async for chunk in _stream_anthropic(messages, api_key, serpapi_key, user_email=user_email):
+        async for chunk in _stream_anthropic(messages, api_key, serpapi_key, user_email=user_email, allow_real_data=allow_real_data):
             yield chunk

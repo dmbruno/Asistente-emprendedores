@@ -391,80 +391,122 @@ function Features() {
 // MODELO DE PRECIOS
 // ────────────────────────────────────────────────────────────────────────
 
+const CheckIcon = () => (
+  <svg className="mt-0.5 h-4 w-4 shrink-0 text-verde-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
 function Modelo() {
   return (
-    <section className="bg-oscuro px-4 py-24">
-      <div className="mx-auto max-w-4xl">
+    <section id="precios" className="bg-oscuro px-4 py-24">
+      <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <span className="inline-block rounded-full border border-verde-600/30 bg-verde-600/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-verde-400">
-            Modelo de precios
+            Planes
           </span>
           <h2 className="mt-4 font-display text-4xl font-bold text-white md:text-5xl">
-            Pagás solo lo que usás
+            Empezá gratis, escalá cuando lo necesités
           </h2>
           <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/50">
-            Sin cuotas mensuales ocultas. La plataforma es gratuita; el costo de IA va directo al proveedor que elegís.
+            3 cotizaciones reales por mes sin pagar nada. Cuando tu volumen crezca, pasás al plan Pro.
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {[
-            {
-              titulo: "Plataforma",
-              precio: "Gratis",
-              desc: "La app, el chat, el historial de sesiones y el envío de emails no tienen costo de suscripción.",
-              items: ["Chat con el agente", "Historial de cotizaciones", "Envío de emails", "Múltiples modelos de IA"],
-              destacado: false,
-            },
-            {
-              titulo: "API de IA (BYOK)",
-              precio: "~USD 0,01–0,10",
-              sufijo: "por cotización",
-              desc: "Traés tu propia API key de Anthropic, OpenAI o Google. Pagás directamente a ellos según el uso.",
-              items: ["Claude Sonnet / Opus", "GPT-4o / GPT-4o mini", "Gemini Pro / Flash", "Vos controlás el gasto"],
-              destacado: true,
-            },
-            {
-              titulo: "Búsqueda de precios",
-              precio: "Plataforma",
-              desc: "La búsqueda en Google Flights y Hotels está cubierta por PropioIA. Sin costo extra para vos.",
-              items: ["Google Flights en tiempo real", "Google Hotels con disponibilidad", "Sin límite de búsquedas", "Incluido en la plataforma"],
-              destacado: false,
-            },
-          ].map((plan) => (
-            <div
-              key={plan.titulo}
-              className={`rounded-2xl border p-6 ${
-                plan.destacado
-                  ? "border-verde-600/40 bg-verde-600/10"
-                  : "border-white/8 bg-white/5"
-              }`}
-            >
-              {plan.destacado && (
-                <div className="mb-3 inline-block rounded-full bg-verde-600/20 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-verde-400">
-                  Principal costo
-                </div>
-              )}
-              <h3 className="font-display text-lg font-bold text-white">{plan.titulo}</h3>
-              <div className="mt-2">
-                <span className="font-display text-3xl font-extrabold text-white">{plan.precio}</span>
-                {plan.sufijo && (
-                  <span className="ml-1 text-sm text-white/40">{plan.sufijo}</span>
-                )}
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-white/50">{plan.desc}</p>
-              <ul className="mt-5 space-y-2">
-                {plan.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-white/70">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-verde-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+        <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+          {/* ── Plan Free ── */}
+          <div className="flex flex-col rounded-2xl border border-white/8 bg-white/5 p-7">
+            <div className="font-display text-sm font-semibold uppercase tracking-wider text-white/40">Free</div>
+            <div className="mt-3">
+              <span className="font-display text-5xl font-extrabold text-white">$0</span>
             </div>
-          ))}
+            <p className="mt-3 text-sm leading-relaxed text-white/50">
+              Para arrancar. Cotizaciones con datos reales hasta que superes el límite mensual.
+            </p>
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {["3 cotizaciones reales por mes", "Chat conversacional ilimitado", "Historial de sesiones", "Envío de email al cliente", "Google Flights + Hotels"].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-white/70">
+                  <CheckIcon />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <a
+              href={DASHBOARD_URL}
+              className="mt-8 block rounded-full border border-white/20 py-3 text-center text-sm font-semibold text-white/70 transition-colors hover:border-white/40 hover:text-white"
+            >
+              Empezar gratis
+            </a>
+          </div>
+
+          {/* ── Plan Pro ── */}
+          <div className="relative flex flex-col rounded-2xl border border-verde-600/50 bg-verde-600/10 p-7 lg:col-span-1">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+              <span className="rounded-full bg-verde-600 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg shadow-verde-900/40">
+                Recomendado
+              </span>
+            </div>
+
+            <div className="font-display text-sm font-semibold uppercase tracking-wider text-verde-400">Pro</div>
+            <div className="mt-3 flex items-baseline gap-3">
+              <span className="font-display text-5xl font-extrabold text-white">$49.999</span>
+              <span className="text-sm text-white/40">ARS / mes</span>
+            </div>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-sm text-white/30 line-through">$71.427</span>
+              <span className="rounded-full bg-dorado-400/20 px-2 py-0.5 text-[11px] font-bold text-dorado-400">
+                30% OFF
+              </span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-white/50">
+              Para agencias y agentes que manejan volumen. Sin límites, sin interrupciones.
+            </p>
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {[
+                "Cotizaciones reales ilimitadas",
+                "Chat conversacional ilimitado",
+                "Historial de sesiones",
+                "Envío de email al cliente",
+                "Google Flights + Hotels",
+                "Soporte prioritario por WhatsApp",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-white/80">
+                  <CheckIcon />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <a
+              href={`${DASHBOARD_URL}/dashboard/suscripcion`}
+              className="mt-8 block rounded-full bg-verde-600 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-verde-900/40 transition-colors hover:bg-verde-500"
+            >
+              Suscribirme al Pro →
+            </a>
+          </div>
+
+          {/* ── BYOK (costo de IA) ── */}
+          <div className="flex flex-col rounded-2xl border border-white/8 bg-white/5 p-7">
+            <div className="font-display text-sm font-semibold uppercase tracking-wider text-white/40">Costo de IA</div>
+            <div className="mt-3">
+              <span className="font-display text-4xl font-extrabold text-white">BYOK</span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-white/50">
+              El agente corre con tu propia API key. Los costos van directo al proveedor, sin margen nuestro.
+            </p>
+            <ul className="mt-6 flex-1 space-y-2.5">
+              {["Claude Sonnet / Opus", "GPT-4o / GPT-4o mini", "Gemini Pro / Flash", "~USD 0,01–0,10 por cotización", "Vos controlás el gasto"].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-white/70">
+                  <CheckIcon />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 rounded-full border border-white/10 py-3 text-center text-sm text-white/30">
+              Sin suscripción adicional
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
