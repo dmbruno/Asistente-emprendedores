@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Main — flex-1 para ocupar todo el espacio restante */}
-      <main className="flex flex-1 flex-col overflow-hidden pt-12 pb-16 md:pt-0 md:pb-0 min-w-0">
+      <main className="flex flex-1 flex-col overflow-y-auto pt-12 pb-16 md:pt-0 md:pb-0 min-w-0">
         {children}
       </main>
     </div>

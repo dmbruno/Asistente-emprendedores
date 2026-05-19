@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default function TravelQuoterPage() {
   return (
     <>
-      <NavbarProducto />
+      <NavbarProducto loginUrl={`${DASHBOARD_URL}/login`} />
       <main>
         <Hero />
         <ParaQuien />

@@ -50,13 +50,6 @@ export function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
-          <a
-            href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:3000"}/login`}
-            className="rounded-full bg-verde-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-verde-500"
-          >
-            Ingresar
-          </a>
-
           {/* Hamburger — mobile only */}
           <button
             className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/10 md:hidden"
