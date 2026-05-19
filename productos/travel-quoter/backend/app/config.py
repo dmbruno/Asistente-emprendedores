@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # ── SMTP de plataforma (envío de cotizaciones) ─────────────────────────────
     smtp_host: str = Field(default="smtp.gmail.com")
-    smtp_port: int = Field(default=587)
+    smtp_port: int = Field(default=465)
     smtp_user: str = Field(..., description="Email Gmail remitente")
     smtp_pass: str = Field(..., description="App Password de Gmail")
     mail_from: str = Field(default="Travel Quoter <noreply@propioia.com>")

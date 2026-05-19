@@ -108,13 +108,15 @@ async def send_quote_email(
             total_usd=float(total_usd),
             notes=notes,
         )
+        use_ssl = settings.smtp_port == 465
         await aiosmtplib.send(
             msg,
             hostname=settings.smtp_host,
             port=settings.smtp_port,
             username=settings.smtp_user,
             password=settings.smtp_pass,
-            start_tls=True,
+            use_tls=use_ssl,
+            start_tls=not use_ssl,
         )
         logger.info("Cotización enviada OK a %s", recipient_email)
         return {"sent": True, "to": recipient_email}
