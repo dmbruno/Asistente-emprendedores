@@ -274,7 +274,7 @@ export function ChatWindow({ sessionId, initialProvider = "anthropic", onTitleUp
         {messages.length === 0 ? (
           <EmptyState onSuggestion={(s) => sendMessage(s)} />
         ) : (
-          <div className="mx-auto max-w-2xl space-y-5">
+          <div className="mx-auto max-w-4xl space-y-5">
             {messages.map((m) => (
               <MessageBubble key={m.id} message={m} />
             ))}
@@ -290,7 +290,7 @@ export function ChatWindow({ sessionId, initialProvider = "anthropic", onTitleUp
 
       {/* Input */}
       <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-4 md:px-8">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-4xl">
           {/* Provider selector */}
           <div className="mb-3 flex items-center gap-1.5">
             <span className="text-xs text-slate-400 mr-1">Modelo:</span>
