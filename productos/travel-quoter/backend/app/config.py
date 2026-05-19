@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     # ── FastAPI ────────────────────────────────────────────────────────────────
     backend_host: str = Field(default="0.0.0.0")
     backend_port: int = Field(default=8000)
-    cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://localhost:5173"
     )
 
     # ── Agent defaults ─────────────────────────────────────────────────────────
@@ -58,12 +58,8 @@ class Settings(BaseSettings):
         os.makedirs(v, exist_ok=True)
         return v
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v):
-        if isinstance(v, str):
-            return [o.strip() for o in v.split(",")]
-        return v
+    def cors_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
 settings = Settings()
