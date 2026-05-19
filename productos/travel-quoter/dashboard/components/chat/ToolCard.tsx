@@ -40,28 +40,81 @@ function ToolLoading({ name }: { name: string }) {
 
 // ── Vuelos ───────────────────────────────────────────────────────────────────
 
+type DatePrice = { date: string; price: number };
+
 function FlightsCard({ data }: { data: Record<string, unknown> }) {
   const note = data.note as string | undefined;
-  const exactFlights = (data.exact_date_flights as unknown[]) ?? (data.flights as unknown[]) ?? [];
-  const flexFlights  = (data.flexible_flights as unknown[]) ?? [];
-  const total = exactFlights.length || flexFlights.length;
-  const cheapest = data.cheapest_price_usd as number | undefined;
   const origin = data.origin as string | undefined;
   const destination = data.destination as string | undefined;
+  const requestedDate = data.requested_date as string | undefined;
+  const cheapestDate = data.cheapest_date as string | undefined;
+  const savingsUsd = data.savings_usd as number | undefined;
+  const allDates = (data.all_dates_prices as DatePrice[]) ?? [];
+
+  const fmt = (iso: string) => {
+    const d = new Date(iso + "T12:00:00");
+    return d.toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" });
+  };
+
+  if (note && allDates.length === 0) {
+    return (
+      <p className="my-1 rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
+        ⚠ {note}
+      </p>
+    );
+  }
 
   return (
-    <div className="my-1 flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        <span className="text-xs text-slate-600">
-          Vuelos{origin && destination ? ` ${origin} → ${destination}` : ""} consultados
-          {cheapest ? ` · desde USD ${cheapest}` : total > 0 ? ` · ${total} opciones` : ""}
-        </span>
+    <div className="my-2 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2.5">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
+          </svg>
+          {origin && destination ? `${origin} → ${destination}` : "Comparativa de vuelos"} · ±3 días
+        </div>
+        {savingsUsd && savingsUsd > 0 && (
+          <span className="rounded-full bg-verde-100 px-2 py-0.5 text-[11px] font-semibold text-verde-700">
+            Ahorrás USD {savingsUsd} cambiando fecha
+          </span>
+        )}
       </div>
+
+      {/* Tabla de precios */}
+      {allDates.length > 0 && (
+        <div className="divide-y divide-slate-50">
+          {allDates.map(({ date, price }) => {
+            const isRequested = date === requestedDate;
+            const isCheapest = date === cheapestDate;
+            const isBoth = isRequested && isCheapest;
+            return (
+              <div
+                key={date}
+                className={`flex items-center justify-between px-4 py-2 ${
+                  isCheapest ? "bg-verde-50" : isRequested ? "bg-slate-50" : ""
+                }`}
+              >
+                <span className={`text-xs ${isCheapest || isRequested ? "font-semibold text-slate-800" : "text-slate-500"}`}>
+                  {fmt(date)}
+                  {isBoth && <span className="ml-2 text-[10px] text-slate-400">pedida + más barata</span>}
+                  {isRequested && !isBoth && <span className="ml-2 text-[10px] text-slate-400">fecha pedida</span>}
+                  {isCheapest && !isBoth && <span className="ml-2 text-[10px] text-verde-600">más barata</span>}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`font-display text-sm font-bold ${isCheapest ? "text-verde-600" : "text-slate-800"}`}>
+                    USD {price.toLocaleString("es-AR")}
+                  </span>
+                  {isCheapest && <span className="text-verde-500">✅</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {note && (
-        <p className="w-full rounded-lg bg-dorado-50 border border-dorado-200 px-3 py-1.5 text-xs text-dorado-700">
+        <p className="border-t border-dorado-100 bg-dorado-50 px-4 py-2 text-[11px] text-dorado-700">
           ⚠ {note}
         </p>
       )}

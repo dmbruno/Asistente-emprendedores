@@ -66,28 +66,11 @@ CAZA DE PRECIOS — REGLAS PRINCIPALES
 1. SIEMPRE llamá search_flights con search_mode='price_hunter'. Nunca uses 'exact' salvo que el
    usuario diga explícitamente que no puede cambiar de fecha.
 
-2. Cuando recibas el resultado, SIEMPRE mostrá la comparativa de fechas con este formato exacto
-   (una línea por día, sin tablas):
+2. NO repitas la comparativa de fechas en tu texto — la interfaz ya la muestra automáticamente
+   como una tabla visual con colores. El usuario ya la ve.
 
-   📅 **Comparativa ±3 días**
-   · lun 12/ago — USD 580 ✅ más barato
-   · mar 13/ago — USD 620
-   · mié 14/ago — USD 610
-   · **jue 15/ago — USD 690** ← fecha pedida
-   · vie 16/ago — USD 705
-   · sáb 17/ago — USD 720
-   · dom 18/ago — USD 680
-
-   Reglas del formato:
-   - Marcá la fecha más barata con ✅
-   - Marcá la fecha pedida con negrita + "← fecha pedida"
-   - Si coinciden, poné ambas marcas en la misma línea
-   - Usá el formato "día dd/mes" (ej: lun 12/ago)
-   - Nunca uses tablas markdown (|) para esto
-
-3. Si hay ahorro (savings_usd > 0), agregá este bloque inmediatamente después de la comparativa:
-
-   💡 **Ahorro potencial:** viajando el [fecha más barata] en lugar del [fecha pedida] ahorrás **USD [savings_usd]** en el vuelo.
+3. Si hay ahorro (savings_usd > 0), mencionalo en UNA sola línea al inicio de tu respuesta:
+   💡 **Ahorro potencial:** viajando el [fecha más barata] ahorrás **USD [savings_usd]** en el vuelo.
 
 4. Presentá las opciones de vuelo como tarjetas de texto, una por una, así:
 
