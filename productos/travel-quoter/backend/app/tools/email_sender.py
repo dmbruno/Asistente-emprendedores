@@ -1,12 +1,14 @@
-"""Envío de cotizaciones por email usando SMTP de plataforma (async)."""
+"""Envío de cotizaciones por email usando Gmail API con OAuth2 (no SMTP)."""
 
 from __future__ import annotations
 
+import base64
 import logging
+from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import aiosmtplib
+import httpx
 
 from app.config import settings
 
@@ -22,58 +24,37 @@ TOOL_DEFINITION = {
     "input_schema": {
         "type": "object",
         "properties": {
-            "recipient_email": {
-                "type": "string",
-                "description": "Email del destinatario",
-            },
-            "recipient_name": {
-                "type": "string",
-                "description": "Nombre completo del pasajero/cliente",
-            },
-            "trip_name": {
-                "type": "string",
-                "description": "Nombre del viaje, ej: 'Viaje a Lima – Ago 2026'",
-            },
-            "airline": {
-                "type": "string",
-                "description": "Aerolínea del vuelo seleccionado, ej: 'LATAM'",
-            },
-            "flight_amount_usd": {
-                "type": "number",
-                "description": "Precio total del vuelo en USD (número, sin símbolo)",
-            },
-            "flight_details": {
-                "type": "string",
-                "description": "Detalles del vuelo: ruta, fecha, horario, escalas. Ej: 'EZE→LIM 15/08 05:45→07:00, directo'",
-            },
-            "hotel_name": {
-                "type": "string",
-                "description": "Nombre del hotel seleccionado",
-            },
-            "hotel_nights": {
-                "type": "integer",
-                "description": "Cantidad de noches de hospedaje",
-            },
-            "hotel_amount_usd": {
-                "type": "number",
-                "description": "Precio total del hotel en USD (precio_noche × noches)",
-            },
-            "hotel_details": {
-                "type": "string",
-                "description": "Detalles del hotel: ubicación, estrellas, amenities principales",
-            },
-            "total_usd": {
-                "type": "number",
-                "description": "Total del paquete en USD (vuelo + hotel)",
-            },
-            "notes": {
-                "type": "string",
-                "description": "Notas adicionales o aclaraciones para el cliente",
-            },
+            "recipient_email": {"type": "string", "description": "Email del destinatario"},
+            "recipient_name": {"type": "string", "description": "Nombre completo del pasajero/cliente"},
+            "trip_name": {"type": "string", "description": "Nombre del viaje, ej: 'Viaje a Lima – Ago 2026'"},
+            "airline": {"type": "string", "description": "Aerolínea del vuelo seleccionado, ej: 'LATAM'"},
+            "flight_amount_usd": {"type": "number", "description": "Precio total del vuelo en USD (número, sin símbolo)"},
+            "flight_details": {"type": "string", "description": "Detalles del vuelo: ruta, fecha, horario, escalas"},
+            "hotel_name": {"type": "string", "description": "Nombre del hotel seleccionado"},
+            "hotel_nights": {"type": "integer", "description": "Cantidad de noches de hospedaje"},
+            "hotel_amount_usd": {"type": "number", "description": "Precio total del hotel en USD"},
+            "hotel_details": {"type": "string", "description": "Detalles del hotel: ubicación, estrellas, amenities"},
+            "total_usd": {"type": "number", "description": "Total del paquete en USD (vuelo + hotel)"},
+            "notes": {"type": "string", "description": "Notas adicionales o aclaraciones para el cliente"},
         },
         "required": ["recipient_email", "recipient_name", "trip_name", "airline", "flight_amount_usd", "hotel_name", "hotel_nights", "hotel_amount_usd", "total_usd"],
     },
 }
+
+
+async def _get_access_token() -> str:
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": settings.gmail_client_id,
+                "client_secret": settings.gmail_client_secret,
+                "refresh_token": settings.gmail_refresh_token,
+                "grant_type": "refresh_token",
+            },
+        )
+        resp.raise_for_status()
+        return resp.json()["access_token"]
 
 
 async def send_quote_email(
@@ -91,9 +72,10 @@ async def send_quote_email(
     notes: str = "",
     **_ignored,
 ) -> dict:
-    """Envía el email con la cotización. Usa SMTP de plataforma (Gmail App Password)."""
     logger.info("Enviando cotización a %s", recipient_email)
     try:
+        access_token = await _get_access_token()
+
         msg = _build_email(
             to_email=recipient_email,
             to_name=recipient_name,
@@ -108,18 +90,20 @@ async def send_quote_email(
             total_usd=float(total_usd),
             notes=notes,
         )
-        use_ssl = settings.smtp_port == 465
-        await aiosmtplib.send(
-            msg,
-            hostname=settings.smtp_host,
-            port=settings.smtp_port,
-            username=settings.smtp_user,
-            password=settings.smtp_pass,
-            use_tls=use_ssl,
-            start_tls=not use_ssl,
-        )
+
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                f"https://gmail.googleapis.com/gmail/v1/users/{settings.gmail_sender}/messages/send",
+                headers={"Authorization": f"Bearer {access_token}"},
+                json={"raw": raw},
+            )
+            resp.raise_for_status()
+
         logger.info("Cotización enviada OK a %s", recipient_email)
         return {"sent": True, "to": recipient_email}
+
     except Exception as e:
         logger.error("Error enviando cotización a %s: %s: %s", recipient_email, type(e).__name__, e)
         return {"sent": False, "error": str(e)}
@@ -131,7 +115,6 @@ def _build_email(
     hotel_name: str, hotel_nights: int, hotel_amount_usd: float, hotel_details: str,
     total_usd: float, notes: str,
 ) -> MIMEMultipart:
-    from datetime import date
     today = date.today().strftime("%d/%m/%Y")
 
     flight_detail_row = f'<tr><td colspan="3" style="padding:2px 10px 8px;color:#6b7280;font-size:13px">{flight_details}</td></tr>' if flight_details else ""
@@ -144,7 +127,6 @@ def _build_email(
       <p style="margin-top:0;color:#6b7280;font-size:13px">Generada el {today}</p>
       <p>Hola {to_name},</p>
       <p>Te enviamos el detalle de tu cotización de viaje.</p>
-
       <table style="width:100%;border-collapse:collapse;margin:16px 0">
         <tr style="background:#f0fdf4">
           <td style="padding:10px;font-weight:bold">✈️ Vuelo</td>
@@ -163,9 +145,7 @@ def _build_email(
           <td style="padding:12px 10px;text-align:right;color:#16a34a">USD {total_usd:,.2f}</td>
         </tr>
       </table>
-
       {notes_block}
-
       <p style="color:#9ca3af;font-size:11px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px">
         Cotización generada por PropioIA Travel Quoter
       </p>
@@ -174,7 +154,7 @@ def _build_email(
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"Cotización: {trip_name}"
-    msg["From"] = settings.mail_from
+    msg["From"] = f"Travel Quoter <{settings.gmail_sender}>"
     msg["To"] = to_email
     msg.attach(MIMEText(html, "html"))
     return msg

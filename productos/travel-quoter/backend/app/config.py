@@ -24,12 +24,11 @@ class Settings(BaseSettings):
     # ── Fernet (encrypt/decrypt de API keys en DB) ─────────────────────────────
     fernet_master_key: str = Field(..., description="Clave maestra Fernet (base64 32 bytes)")
 
-    # ── SMTP de plataforma (envío de cotizaciones) ─────────────────────────────
-    smtp_host: str = Field(default="smtp.gmail.com")
-    smtp_port: int = Field(default=465)
-    smtp_user: str = Field(..., description="Email Gmail remitente")
-    smtp_pass: str = Field(..., description="App Password de Gmail")
-    mail_from: str = Field(default="Travel Quoter <noreply@propioia.com>")
+    # ── Gmail API OAuth2 (envío de cotizaciones) ───────────────────────────────
+    gmail_sender: str = Field(..., description="Email Gmail remitente (ej: vos@gmail.com)")
+    gmail_client_id: str = Field(..., description="OAuth2 Client ID de Google Cloud")
+    gmail_client_secret: str = Field(..., description="OAuth2 Client Secret de Google Cloud")
+    gmail_refresh_token: str = Field(..., description="OAuth2 Refresh Token obtenido via Playground")
 
     # ── FastAPI ────────────────────────────────────────────────────────────────
     backend_host: str = Field(default="0.0.0.0")
