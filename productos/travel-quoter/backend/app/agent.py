@@ -72,17 +72,20 @@ CAZA DE PRECIOS — REGLAS PRINCIPALES
 3. Si hay ahorro (savings_usd > 0), mencionalo en UNA sola línea al inicio de tu respuesta:
    💡 **Ahorro potencial:** viajando el [fecha más barata] ahorrás **USD [savings_usd]** en el vuelo.
 
-4. Presentá las opciones de vuelo como tarjetas de texto, una por una, así:
+4. Presentá las opciones de vuelo NUMERADAS, así:
 
-   ✈️ **LATAM — USD 631**
-   Sin escalas · 3h 15m · Sale 05:45 → Llega 07:00
+   **Vuelos para el [fecha pedida]:**
+   1. ✈️ **LATAM — USD 631** · Sin escalas · 3h 15m · Sale 05:45 → Llega 07:00
+   2. ✈️ **Aerolíneas Argentinas — USD 668** · 1 escala · 10h 55m · Sale 11:05 → Llega 20:00
+   3. ✈️ **JetSMART — USD 690** · 1 escala · 18h 44m · Sale 15:36 → Llega 08:20
 
-   ✈️ **Aerolíneas Argentinas — USD 668**
-   1 escala · 10h 55m · Sale 11:05 → Llega 20:00
+   Si hay dos fechas distintas, mostrá ambos bloques numerados en forma continua:
+   **Vuelos más económicos ([fecha barata]):**
+   4. ✈️ **LATAM — USD 490** · Sin escalas · 3h 15m · Sale 05:45 → Llega 07:00
+   5. ✈️ **JetSMART — USD 510** · 1 escala · 14h 5m · Sale 07:55 → Llega 20:00
 
-   Si hay dos fechas distintas (pedida y más económica), mostrá primero las opciones de la fecha pedida
-   bajo el título "**Vuelos para el [fecha pedida]:**" y luego las de la fecha más barata bajo
-   "**Vuelos más económicos ([fecha barata]):**". Nunca uses tablas markdown para esto.
+   La numeración debe ser continua (no reiniciar en cada bloque) para que el usuario pueda decir
+   "quiero el vuelo 3". Nunca uses tablas markdown para esto.
 
 5. Cuando recibas el resultado de search_flights, si incluye 'google_flights_url', agregalo al final:
    🔗 [Ver todas las opciones en Google Flights](<url>)
@@ -90,11 +93,16 @@ CAZA DE PRECIOS — REGLAS PRINCIPALES
 ═══════════════════════════════════════════════
 HOTELES
 ═══════════════════════════════════════════════
-- Presentá hasta 3 hoteles ordenados por precio con este formato (sin tablas):
+- Presentá hasta 3 hoteles NUMERADOS, ordenados por precio, con este formato (sin tablas):
 
-  🏨 **[Nombre del hotel]** ⭐[estrellas]
-  USD [precio]/noche · Rating [X]/5 · [Ubicación]
-  [Ver hotel](<link>) ← solo si el resultado incluye link
+  1. 🏨 **[Nombre del hotel]** ⭐[estrellas]
+     USD [precio]/noche · Rating [X]/5 · [Ubicación]
+     [Ver hotel](<link>) ← solo si el resultado incluye link
+
+  2. 🏨 **[Nombre del hotel]** ⭐[estrellas]
+     USD [precio]/noche · Rating [X]/5 · [Ubicación]
+
+  La numeración permite que el usuario diga "quiero el hotel 2".
 
 - Si el usuario cambia la fecha del vuelo al más barato, recordale que las fechas del hotel también cambian.
 

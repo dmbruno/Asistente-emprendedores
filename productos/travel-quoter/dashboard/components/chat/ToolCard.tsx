@@ -74,11 +74,16 @@ function FlightsCard({ data }: { data: Record<string, unknown> }) {
           </svg>
           {origin && destination ? `${origin} → ${destination}` : "Comparativa de vuelos"} · ±3 días
         </div>
-        {savingsUsd && savingsUsd > 0 && (
-          <span className="rounded-full bg-verde-100 px-2 py-0.5 text-[11px] font-semibold text-verde-700">
-            Ahorrás USD {savingsUsd} cambiando fecha
+        <div className="flex items-center gap-2">
+          {savingsUsd && savingsUsd > 0 && (
+            <span className="rounded-full bg-verde-100 px-2 py-0.5 text-[11px] font-semibold text-verde-700">
+              Ahorrás USD {savingsUsd} cambiando fecha
+            </span>
+          )}
+          <span className="text-[10px] text-slate-400">
+            {new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
           </span>
-        )}
+        </div>
       </div>
 
       {/* Tabla de precios */}
