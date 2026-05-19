@@ -89,6 +89,27 @@ const AGENTES: Agente[] = [
     ctaHref: "/servicios/atencion",
     footerNote: "Servicio a medida · Cotización en 24hs · BYOK",
   },
+  {
+    slug: "cotizador",
+    emoji: "✈️",
+    nombre: "Cotizador de Viajes",
+    subtitulo: "Vuelos · Hoteles · Cotizaciones por email",
+    descripcionCorta:
+      "Describís el viaje en lenguaje natural, la IA busca vuelos y hoteles reales en Google Flights/Hotels y genera una cotización lista para enviar al cliente.",
+    features: [
+      { icon: "✈️", titulo: "Vuelos reales", desc: "Busca en Google Flights con precios actualizados. Sin datos inventados." },
+      { icon: "🏨", titulo: "Hoteles reales", desc: "Consulta Google Hotels con disponibilidad, estrellas y precio por noche." },
+      { icon: "📧", titulo: "Email automático", desc: "Enviá la cotización completa al cliente con un email profesional y detallado." },
+      { icon: "🤖", titulo: "Multi-modelo IA", desc: "Elegís entre Claude, GPT-4o o Gemini según tu preferencia y presupuesto." },
+      { icon: "🔐", titulo: "BYOK", desc: "Traés tu propia API key. Los costos van directo al proveedor, sin margen nuestro." },
+      { icon: "📅", titulo: "Flexibilidad de fechas", desc: "El agente puede explorar fechas alternativas para encontrar el mejor precio." },
+      { icon: "💬", titulo: "Chat conversacional", desc: "Cada consulta es una conversación. Pedís alternativas o ajustes sin empezar de cero." },
+      { icon: "📂", titulo: "Historial de sesiones", desc: "Todas tus cotizaciones quedan guardadas. Retomás cualquier consulta cuando quieras." },
+    ],
+    ctaLabel: "Empezar gratis →",
+    ctaHref: "/servicios/cotizador",
+    footerNote: "Plataforma gratuita · BYOK · Sin suscripción mensual",
+  },
 ];
 
 // ────────────────────────────────────────────────────────────────────────

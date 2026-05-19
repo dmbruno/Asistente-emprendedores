@@ -33,6 +33,12 @@ const AGENTES: Agent[] = [
     href: "/servicios/atencion",
   },
   {
+    icon: "✈️",
+    nombre: "Cotizador de Viajes",
+    tagline: "Cotizá vuelos y hoteles reales con IA. Enviá presupuestos en minutos.",
+    href: "/servicios/cotizador",
+  },
+  {
     icon: "✨",
     nombre: "Próximamente",
     tagline: "Nuevos agentes en camino. ¿Tenés una idea? Contanos.",
