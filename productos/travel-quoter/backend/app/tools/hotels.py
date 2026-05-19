@@ -84,7 +84,7 @@ async def search_hotels(serpapi_key: str, allow_real_data: bool = True, **params
 
 
 def _normalize(data: dict, params: dict) -> dict:
-    properties = (data.get("properties") or [])[:6]
+    properties = (data.get("properties") or [])[:8]
     hotels = []
     for p in properties:
         rate = p.get("rate_per_night") or {}

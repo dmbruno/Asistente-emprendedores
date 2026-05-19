@@ -87,9 +87,9 @@ async def search_flights(serpapi_key: str, allow_real_data: bool = True, **param
         result["mode"] = "exact"
         return result
 
-    # Price hunter: 7 llamadas paralelas (fecha -3 a +3)
+    # Price hunter: 11 llamadas paralelas (fecha -5 a +5)
     base = datetime.strptime(params["departure_date"], "%Y-%m-%d")
-    dates = [(base + timedelta(days=d)).strftime("%Y-%m-%d") for d in range(-3, 4)]
+    dates = [(base + timedelta(days=d)).strftime("%Y-%m-%d") for d in range(-5, 6)]
     tasks = [_serp_flights(serpapi_key, {**params, "departure_date": d}) for d in dates]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     return _build_price_hunter(results, params, dates)
@@ -144,18 +144,25 @@ def _google_flights_url(origin: str, destination: str, departure_date: str, retu
 def _normalize(data: dict, params: dict) -> dict:
     offers = (data.get("best_flights") or []) + (data.get("other_flights") or [])
     flights = []
-    for offer in offers[:5]:
+    for offer in offers:  # sin límite — tomamos todo lo que devuelve Google
         legs = offer.get("flights") or []
         if not legs:
             continue
         first, last = legs[0], legs[-1]
         dur = offer.get("total_duration", 0)
+        dep_date = params.get("departure_date", "")
         flights.append({
             "id": (offer.get("booking_token") or "")[:20],
             "total_amount": str(offer.get("price", 0)),
             "total_currency": "USD",
             "airline": first.get("airline", "?"),
-            "departure_date": params.get("departure_date"),
+            "departure_date": dep_date,
+            "google_flights_url": _google_flights_url(
+                params.get("origin", ""),
+                params.get("destination", ""),
+                dep_date,
+                params.get("return_date"),
+            ),
             "slices": [{
                 "duration": f"PT{dur // 60}H{dur % 60}M",
                 "stops": max(0, len(legs) - 1),
@@ -164,6 +171,7 @@ def _normalize(data: dict, params: dict) -> dict:
                 "flight_number": first.get("flight_number"),
             }],
         })
+    flights.sort(key=lambda f: _parse(f["total_amount"]))
 
     pi = data.get("price_insights") or {}
     return {
@@ -226,12 +234,12 @@ def _build_price_hunter(results, params: dict, dates: list) -> dict:
         "origin": params["origin"],
         "destination": params["destination"],
         "passengers": params.get("passengers", 1),
-        "exact_date_flights": (exact or {}).get("flights", [])[:3],
+        "exact_date_flights": sorted((exact or {}).get("flights", []), key=lambda f: _parse(f.get("total_amount", "9999"))),
         "exact_date_price_usd": exact_price,
         "exact_date_source": "google_flights",
         "cheapest_date": best["date"],
         "cheapest_price_usd": best["price"],
-        "flexible_flights": best["flights"][:3],
+        "flexible_flights": sorted(best["flights"], key=lambda f: _parse(f.get("total_amount", "9999"))),
         "flexible_source": "google_flights",
         "savings_usd": savings,
         "all_dates_prices": [{"date": o["date"], "price": o["price"]} for o in sorted(options, key=lambda x: x["date"])],
