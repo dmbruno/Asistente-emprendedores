@@ -154,7 +154,7 @@ def _build_email(
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"Cotización: {trip_name}"
-    msg["From"] = f"Travel Quoter <{settings.smtp_user}>"
+    msg["From"] = f"Travel Quoter <{settings.gmail_sender}>"
     msg["To"] = to_email
     msg.attach(MIMEText(html, "html"))
     return msg
