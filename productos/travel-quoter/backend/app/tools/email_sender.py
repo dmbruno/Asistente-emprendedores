@@ -72,8 +72,7 @@ async def send_quote_email(
             notes=notes,
         )
 
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            server.starttls()
+        with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
             server.login(settings.smtp_user, settings.smtp_pass)
             server.sendmail(settings.smtp_user, recipient_email, msg.as_string())
 
