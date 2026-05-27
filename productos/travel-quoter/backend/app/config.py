@@ -24,11 +24,11 @@ class Settings(BaseSettings):
     # ── Fernet (encrypt/decrypt de API keys en DB) ─────────────────────────────
     fernet_master_key: str = Field(..., description="Clave maestra Fernet (base64 32 bytes)")
 
-    # ── SMTP (envío de cotizaciones) ───────────────────────────────────────────
-    smtp_host: str = Field(default="smtp.gmail.com")
-    smtp_port: int = Field(default=587)
-    smtp_user: str = Field(default="")
-    smtp_pass: str = Field(default="")
+    # ── Gmail API OAuth2 (envío de cotizaciones) ───────────────────────────────
+    gmail_sender: str = Field(default="")
+    gmail_client_id: str = Field(default="")
+    gmail_client_secret: str = Field(default="")
+    gmail_refresh_token: str = Field(default="")
 
     # ── FastAPI ────────────────────────────────────────────────────────────────
     backend_host: str = Field(default="0.0.0.0")

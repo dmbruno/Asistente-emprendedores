@@ -1,12 +1,14 @@
-"""Envío de cotizaciones por email usando SMTP."""
+"""Envío de cotizaciones por email usando Gmail API con OAuth2."""
 
 from __future__ import annotations
 
+import base64
 import logging
-import smtplib
 from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import httpx
 
 from app.config import settings
 
@@ -40,6 +42,21 @@ TOOL_DEFINITION = {
 }
 
 
+async def _get_access_token() -> str:
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": settings.gmail_client_id,
+                "client_secret": settings.gmail_client_secret,
+                "refresh_token": settings.gmail_refresh_token,
+                "grant_type": "refresh_token",
+            },
+        )
+        resp.raise_for_status()
+        return resp.json()["access_token"]
+
+
 async def send_quote_email(
     recipient_email: str,
     recipient_name: str,
@@ -57,6 +74,8 @@ async def send_quote_email(
 ) -> dict:
     logger.info("Enviando cotización a %s", recipient_email)
     try:
+        access_token = await _get_access_token()
+
         msg = _build_email(
             to_email=recipient_email,
             to_name=recipient_name,
@@ -72,9 +91,15 @@ async def send_quote_email(
             notes=notes,
         )
 
-        with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
-            server.login(settings.smtp_user, settings.smtp_pass)
-            server.sendmail(settings.smtp_user, recipient_email, msg.as_string())
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                f"https://gmail.googleapis.com/gmail/v1/users/{settings.gmail_sender}/messages/send",
+                headers={"Authorization": f"Bearer {access_token}"},
+                json={"raw": raw},
+            )
+            resp.raise_for_status()
 
         logger.info("Cotización enviada OK a %s", recipient_email)
         return {"sent": True, "to": recipient_email}
