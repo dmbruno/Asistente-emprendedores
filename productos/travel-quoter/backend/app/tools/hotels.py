@@ -1,10 +1,8 @@
-"""Búsqueda de hoteles vía SerpAPI (Google Hotels)."""
+"""Búsqueda de hoteles — delega en app/providers/router.py."""
 
 from __future__ import annotations
 
-import httpx
-
-SERPAPI_BASE = "https://serpapi.com/search"
+from app.providers import router
 
 TOOL_DEFINITION = {
     "name": "search_hotels",
@@ -56,58 +54,13 @@ async def search_hotels(serpapi_key: str, allow_real_data: bool = True, **params
     if not serpapi_key:
         return _mock_results(params)
 
-    city = params.get("destination_city", "")
-    query: dict = {
-        "engine": "google_hotels",
-        "q": f"hotels in {city}",
-        "check_in_date": params.get("check_in"),
-        "check_out_date": params.get("check_out"),
-        "adults": params.get("guests", 1),
-        "currency": "USD",
-        "hl": "es",
-        "api_key": serpapi_key,
-    }
-    if params.get("stars"):
-        query["hotel_class"] = params["stars"]
-    if params.get("max_price_per_night_usd"):
-        query["max_price"] = int(params["max_price_per_night_usd"])
+    result = await router.search_hotels(serpapi_key, **params)
 
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.get(SERPAPI_BASE, params=query)
-            resp.raise_for_status()
-            return _normalize(resp.json(), params)
-    except httpx.HTTPStatusError as e:
-        return {"hotels": [], "source": "google_hotels", "error": f"SerpAPI {e.response.status_code}"}
-    except Exception as e:
-        return {"hotels": [], "source": "google_hotels", "error": str(e)[:120]}
+    # Si el provider devuelve lista vacía sin error explícito, caemos al mock.
+    if not result.get("hotels") and not result.get("error"):
+        return _mock_results(params)
 
-
-def _normalize(data: dict, params: dict) -> dict:
-    properties = (data.get("properties") or [])[:8]
-    hotels = []
-    for p in properties:
-        rate = p.get("rate_per_night") or {}
-        price = rate.get("extracted_lowest") or 0
-        hotels.append({
-            "id": (p.get("property_token") or "")[:20],
-            "name": p.get("name", ""),
-            "stars": p.get("extracted_hotel_class") or 0,
-            "price_per_night_usd": price,
-            "rating": p.get("overall_rating"),
-            "reviews": p.get("reviews"),
-            "location": p.get("neighborhood") or p.get("type", ""),
-            "amenities": (p.get("amenities") or [])[:6],
-            "deal": p.get("deal_description"),
-            "link": p.get("link", ""),
-        })
-    return {
-        "hotels": hotels,
-        "source": "google_hotels",
-        "destination": params.get("destination_city"),
-        "check_in": params.get("check_in"),
-        "check_out": params.get("check_out"),
-    }
+    return result
 
 
 def _mock_results(params: dict) -> dict:

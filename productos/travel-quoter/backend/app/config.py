@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # ── SerpAPI (plataforma — clave del dueño de la app, no BYOK) ─────────────
     serpapi_api_key: str = Field(default="", description="SerpAPI key para Google Flights/Hotels/Web")
 
+    # ── Duffel (plataforma — vuelos reales y bookables) ────────────────────────
+    duffel_token: str = Field(default="", description="Duffel API token para búsqueda y reserva de vuelos")
+
     # ── Mercado Pago ───────────────────────────────────────────────────────────
     mp_access_token: str = Field(default="", description="Mercado Pago Access Token")
     mp_public_key: str = Field(default="", description="Mercado Pago Public Key")
@@ -69,7 +72,14 @@ class Settings(BaseSettings):
         return v
 
     def cors_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        import json
+        v = self.cors_origins.strip()
+        if v.startswith("["):
+            try:
+                return [o.strip() for o in json.loads(v) if o.strip()]
+            except json.JSONDecodeError:
+                pass
+        return [o.strip().strip('"').strip("'") for o in v.split(",") if o.strip()]
 
 
 settings = Settings()
